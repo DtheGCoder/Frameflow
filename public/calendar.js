@@ -387,9 +387,8 @@ function renderIconGrid(query) {
   }
   elements.iconGrid.innerHTML = icons
     .map((icon) => `
-      <button type="button" class="cal-icon-tile" data-icon="${icon.key}">
-        <span>${renderIconSvg(icon.key, 'ff-icon cal-icon-tile-svg')}</span>
-        <strong>${escapeHtml(icon.label)}</strong>
+      <button type="button" class="cal-icon-tile" data-icon="${icon.key}" title="${escapeHtml(icon.label)}" aria-label="${escapeHtml(icon.label)}">
+        ${renderIconSvg(icon.key, 'ff-icon cal-icon-tile-svg')}
       </button>
     `)
     .join('');

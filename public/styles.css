@@ -2525,34 +2525,30 @@ body[data-overlay-theme="soft"] .frame-overlay {
 
 .cal-icon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(3.6rem, 1fr));
+  gap: 0.45rem;
   max-height: 22rem;
   overflow: auto;
   padding-right: 0.2rem;
 }
 .cal-icon-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 0.65rem 0.4rem;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 0.55rem;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   color: #f7f0df;
   cursor: pointer;
   transition: transform 200ms ease, background 200ms ease, border-color 200ms ease;
-  font-size: 0.72rem;
-  text-align: center;
 }
 .cal-icon-tile:hover {
   transform: translateY(-2px);
   border-color: rgba(250, 204, 21, 0.6);
   background: rgba(250, 204, 21, 0.08);
 }
-.cal-icon-tile .ff-icon { width: 1.5rem; height: 1.5rem; color: #facc15; }
+.cal-icon-tile .ff-icon { width: 1.9rem; height: 1.9rem; color: #facc15; }
 .cal-icon-tile.is-active {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(250, 204, 21, 0.35));
   border-color: rgba(250, 204, 21, 0.8);
@@ -3830,9 +3826,8 @@ body.admin-v2 {
 }
 .frame-shell .cal-icon-tile {
   padding: 0.7rem;
-  font-size: 0.95rem;
 }
-.frame-shell .cal-icon-tile .ff-icon { width: 1.8rem; height: 1.8rem; }
+.frame-shell .cal-icon-tile .ff-icon { width: 2.2rem; height: 2.2rem; }
 .frame-shell .cal-menu-tabs button {
   padding: 0.65rem 1.3rem;
   font-size: 1rem;
