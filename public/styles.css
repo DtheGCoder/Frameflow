@@ -5038,13 +5038,13 @@ svg.ff-icon polyline:not([fill]):not([stroke]) {
 /* Sun — rotating rays + gentle core pulse */
 @keyframes wx-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes wx-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-.wx-sun .wx-rays { transform-origin: 12px 12px; transform-box: fill-box; animation: wx-rotate 18s linear infinite; }
-.wx-sun .wx-sun-core { transform-origin: 12px 12px; transform-box: fill-box; animation: wx-pulse 3s ease-in-out infinite; }
+.wx-sun .wx-rays { transform-origin: 12px 12px; transform-box: view-box; animation: wx-rotate 18s linear infinite; }
+.wx-sun .wx-sun-core { transform-origin: 12px 12px; transform-box: view-box; animation: wx-pulse 3s ease-in-out infinite; }
 
 /* Partly cloudy — sun rays spin, cloud drifts */
 @keyframes wx-cloud-drift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(1.2px); } }
-.wx-partly .wx-rays-small { transform-origin: 8px 9px; transform-box: fill-box; animation: wx-rotate 22s linear infinite; }
-.wx-partly .wx-cloud-drift { transform-origin: center; transform-box: fill-box; animation: wx-cloud-drift 4.5s ease-in-out infinite; }
+.wx-partly .wx-rays-small { transform-origin: 8px 9px; transform-box: view-box; animation: wx-rotate 22s linear infinite; }
+.wx-partly .wx-cloud-drift { transform-origin: 14px 13px; transform-box: view-box; animation: wx-cloud-drift 4.5s ease-in-out infinite; }
 
 /* Cloud — gentle float */
 .wx-cloud .wx-cloud-drift { transform-origin: center; transform-box: fill-box; animation: wx-cloud-drift 4s ease-in-out infinite; }
