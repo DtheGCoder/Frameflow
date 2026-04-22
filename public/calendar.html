@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Kalender</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="cal-shell">
+    <div class="cal-glow cal-glow-one"></div>
+    <div class="cal-glow cal-glow-two"></div>
+
+    <header class="cal-topbar">
+      <div class="cal-topbar-left">
+        <button id="menuToggle" class="cal-icon-button" type="button" aria-label="Menü">
+          <span></span><span></span><span></span>
+        </button>
+        <div>
+          <p class="cal-eyebrow">Kalender</p>
+          <h1 id="calendarTitle">April 2026</h1>
+        </div>
+      </div>
+
+      <nav class="cal-topbar-tabs" id="mainTabs">
+        <button type="button" data-tab="calendar" class="is-active">Kalender</button>
+        <button type="button" data-tab="categories">Kategorien</button>
+        <button type="button" data-tab="settings">Einstellungen</button>
+      </nav>
+
+      <div class="cal-topbar-right">
+        <a class="cal-chip-link" href="/" title="Admin öffnen">Admin</a>
+        <a class="cal-chip-link" href="/frame" target="_blank" rel="noreferrer" title="Frame öffnen">Frame</a>
+      </div>
+    </header>
+
+    <main class="cal-main">
+      <section id="calendarTab" class="cal-panel is-active">
+        <div class="cal-control-bar">
+          <div class="cal-segmented" id="calendarViewTabs">
+            <button type="button" class="is-active" data-view="day">Tag</button>
+            <button type="button" data-view="week">Woche</button>
+            <button type="button" data-view="month">Monat</button>
+          </div>
+          <div class="cal-nav-group">
+            <button id="calendarPrev" class="cal-round-button" type="button" aria-label="Zurück">‹</button>
+            <button id="calendarToday" class="cal-pill-button" type="button">Heute</button>
+            <button id="calendarNext" class="cal-round-button" type="button" aria-label="Weiter">›</button>
+          </div>
+          <button id="openNewEvent" class="cal-primary-button" type="button">
+            <span>+</span> Neuer Termin
+          </button>
+        </div>
+
+        <div id="calendarSurface" class="cal-surface">
+          <div id="calendarViewContent" class="cal-view-content"></div>
+        </div>
+      </section>
+
+      <section id="categoriesTab" class="cal-panel">
+        <div class="cal-panel-head">
+          <div>
+            <h2>Kategorien</h2>
+            <p>Farben und Symbole für deine Termine.</p>
+          </div>
+          <button id="openNewCategory" class="cal-primary-button" type="button"><span>+</span> Neue Kategorie</button>
+        </div>
+        <div id="categoryList" class="cal-category-grid"></div>
+      </section>
+
+      <section id="settingsTab" class="cal-panel">
+        <div class="cal-panel-head">
+          <div>
+            <h2>Einstellungen</h2>
+            <p>So erscheint der Kalender im Frame.</p>
+          </div>
+        </div>
+        <form id="calendarSettingsForm" class="cal-settings-form">
+          <label class="cal-field">
+            <span>Termine im Foto-Widget</span>
+            <input name="photoWidgetMax" type="number" min="1" max="6" step="1" />
+          </label>
+          <label class="cal-toggle-row">
+            <input name="showPhotoWidget" type="checkbox" />
+            <span>Terminvorschau im Foto-Modus anzeigen</span>
+          </label>
+          <label class="cal-toggle-row">
+            <input name="swipeEnabled" type="checkbox" />
+            <span>Wischgesten zwischen Foto und Kalender erlauben</span>
+          </label>
+          <button class="cal-primary-button" type="submit">Speichern</button>
+        </form>
+      </section>
+    </main>
+
+    <!-- Termin-Dialog -->
+    <dialog id="eventDialog" class="cal-dialog">
+      <form id="eventForm" method="dialog" class="cal-dialog-body">
+        <header>
+          <h3 id="eventDialogTitle">Neuer Termin</h3>
+          <button type="button" class="cal-icon-button" data-close>✕</button>
+        </header>
+        <input type="hidden" name="eventId" />
+        <label class="cal-field">
+          <span>Titel</span>
+          <input name="title" type="text" maxlength="120" placeholder="z. B. Zahnarzt" required />
+        </label>
+        <label class="cal-field">
+          <span>Notiz</span>
+          <textarea name="notes" rows="2" maxlength="240" placeholder="Optional"></textarea>
+        </label>
+        <div class="cal-two-col">
+          <label class="cal-field">
+            <span>Start</span>
+            <input name="startAt" type="datetime-local" required />
+          </label>
+          <label class="cal-field">
+            <span>Ende</span>
+            <input name="endAt" type="datetime-local" required />
+          </label>
+        </div>
+        <label class="cal-toggle-row">
+          <input name="allDay" type="checkbox" />
+          <span>Ganztägig</span>
+        </label>
+        <div class="cal-field">
+          <span>Kategorie</span>
+          <div id="eventCategoryChips" class="cal-category-chips"></div>
+        </div>
+        <div class="cal-field">
+          <span>Symbol</span>
+          <button type="button" id="eventIconTrigger" class="cal-icon-picker-trigger">
+            <span class="cal-icon-picker-preview" id="eventIconPreview"></span>
+            <span id="eventIconLabel">Symbol wählen</span>
+            <small>Antippen zum Ändern</small>
+          </button>
+          <input type="hidden" name="icon" />
+        </div>
+        <footer>
+          <button type="button" id="eventDeleteButton" class="cal-danger-button hidden">Löschen</button>
+          <button type="button" class="cal-ghost-button" data-close>Abbrechen</button>
+          <button type="submit" class="cal-primary-button">Speichern</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <!-- Kategorie-Dialog -->
+    <dialog id="categoryDialog" class="cal-dialog">
+      <form id="categoryForm" method="dialog" class="cal-dialog-body">
+        <header>
+          <h3 id="categoryDialogTitle">Neue Kategorie</h3>
+          <button type="button" class="cal-icon-button" data-close>✕</button>
+        </header>
+        <input type="hidden" name="categoryId" />
+        <label class="cal-field">
+          <span>Name</span>
+          <input name="name" type="text" maxlength="80" placeholder="z. B. Ärzte" required />
+        </label>
+        <label class="cal-field">
+          <span>Farbe</span>
+          <input name="color" type="color" value="#f59e0b" />
+        </label>
+        <div class="cal-field">
+          <span>Symbol</span>
+          <button type="button" id="categoryIconTrigger" class="cal-icon-picker-trigger">
+            <span class="cal-icon-picker-preview" id="categoryIconPreview"></span>
+            <span id="categoryIconLabel">Symbol wählen</span>
+            <small>Antippen zum Ändern</small>
+          </button>
+          <input type="hidden" name="icon" />
+        </div>
+        <footer>
+          <button type="button" id="categoryDeleteButton" class="cal-danger-button hidden">Löschen</button>
+          <button type="button" class="cal-ghost-button" data-close>Abbrechen</button>
+          <button type="submit" class="cal-primary-button">Speichern</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <!-- Icon-Picker-Dialog -->
+    <dialog id="iconPickerDialog" class="cal-dialog cal-dialog-wide">
+      <div class="cal-dialog-body">
+        <header>
+          <h3>Symbol wählen</h3>
+          <button type="button" class="cal-icon-button" data-close>✕</button>
+        </header>
+        <label class="cal-search-field">
+          <input id="iconSearchInput" type="search" placeholder="Suche z. B. Arzt, Sport, Feier…" />
+        </label>
+        <div id="iconGrid" class="cal-icon-grid"></div>
+      </div>
+    </dialog>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/static/calendar-core.js"></script>
+    <script src="/static/calendar.js" defer></script>
+  </body>
+</html>
