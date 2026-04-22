@@ -100,7 +100,6 @@ server {
 server {
     listen ${HTTPS_PORT} ssl;
     listen [::]:${HTTPS_PORT} ssl;
-    http2 on;
     server_name ${DOMAIN};
 
     ssl_certificate     ${CERT_DIR}/fullchain.pem;
