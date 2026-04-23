@@ -67,9 +67,10 @@
   overflow-x: hidden;
   overscroll-behavior-y: contain;
 }
-.kal-shell button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.kal-shell button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; transition: transform 180ms cubic-bezier(0.16,1,0.3,1), background 200ms, color 200ms, border-color 200ms, box-shadow 240ms; }
 .kal-shell input, .kal-shell textarea, .kal-shell select {
   font: inherit;
+  font-size: 16px; /* iOS: verhindert Auto-Zoom beim Fokus */
   color: var(--kal-text);
   background: var(--kal-bg-soft);
   border: 1px solid var(--kal-border);
@@ -79,7 +80,7 @@
   outline: none;
   -webkit-appearance: none;
   appearance: none;
-  transition: border-color 160ms, box-shadow 160ms, background 160ms;
+  transition: border-color 240ms ease, box-shadow 260ms ease, background 240ms ease, color 200ms ease;
 }
 .kal-shell input[type="color"] { padding: 0.2rem; height: 52px; }
 .kal-shell input:focus, .kal-shell textarea:focus, .kal-shell select:focus {
@@ -553,12 +554,23 @@
 }
 .kal-category-list { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
 .kal-category-list .cal-category-card {
-  background: var(--kal-bg-card); border: 1px solid var(--kal-border);
-  border-radius: var(--kal-radius); padding: 0.9rem 1rem;
-  display: grid; grid-template-columns: 44px 1fr; gap: 0.8rem;
-  align-items: center; text-align: left; min-height: 64px; color: var(--kal-text);
+  background: linear-gradient(160deg, var(--kal-bg-card), var(--kal-bg-soft));
+  border: 1px solid var(--kal-border);
+  border-radius: var(--kal-radius); padding: 0.95rem 1.05rem;
+  display: grid; grid-template-columns: 48px 1fr; gap: 0.9rem;
+  align-items: center; text-align: left; min-height: 68px; color: var(--kal-text);
+  box-shadow: var(--kal-shadow-soft);
+  transition: transform 220ms cubic-bezier(0.16,1,0.3,1), border-color 260ms ease, box-shadow 260ms ease;
+  animation: kal-card-in 420ms cubic-bezier(0.16,1,0.3,1) both;
 }
-.kal-category-list .cal-category-card:active { background: var(--kal-bg-soft); }
+@keyframes kal-card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kal-category-list .cal-category-card:active {
+  transform: scale(0.98);
+  border-color: var(--kal-border-strong);
+}
 .kal-category-list .cal-category-icon {
   width: 44px; height: 44px;
   display: grid; place-items: center;
@@ -617,16 +629,22 @@
 }
 .kal-switch-thumb {
   position: absolute; top: 3px; left: 3px;
+.kal-switch-thumb {
+  position: absolute; top: 3px; left: 3px;
   width: 22px; height: 22px; border-radius: 50%;
-  background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  transition: transform 180ms;
+  background: radial-gradient(circle at 30% 30%, #fff, #f5e6d3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.06);
+  transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .kal-switch input:checked ~ .kal-switch-track {
   background: var(--kal-gradient);
   border-color: transparent;
-  box-shadow: 0 2px 12px var(--kal-accent-glow);
+  box-shadow: 0 2px 12px var(--kal-accent-glow), inset 0 1px 0 rgba(255,255,255,0.3);
 }
-.kal-switch input:checked ~ .kal-switch-track .kal-switch-thumb { transform: translateX(22px); }
+.kal-switch input:checked ~ .kal-switch-track .kal-switch-thumb { transform: translateX(22px) scale(1.04); }
+.kal-switch-track {
+  transition: background 300ms ease, border-color 260ms ease, box-shadow 300ms ease;
+}
 .kal-switch-label { font-size: 0.95rem; font-weight: 500; grid-column: 1 / 3; order: 1; }
 
 /* ========== BUTTONS ========== */
@@ -659,11 +677,17 @@
 .kal-primary-block { width: 100%; min-height: 54px; font-size: 1.02rem; }
 .kal-danger {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.7rem 1.1rem; border-radius: 12px;
-  background: rgba(239,68,68,0.12); color: var(--kal-danger);
-  font-weight: 600; font-size: 0.92rem; min-height: 44px;
-  border: 1px solid rgba(239,68,68,0.3);
+  padding: 0.7rem 1.1rem; border-radius: 14px;
+  background: rgba(224,108,117,0.12); color: var(--kal-danger);
+  font-weight: 600; font-size: 0.92rem; min-height: 46px;
+  border: 1px solid rgba(224,108,117,0.3);
   justify-content: center;
+  transition: background 240ms ease, border-color 240ms ease, transform 180ms cubic-bezier(0.16,1,0.3,1);
+}
+.kal-danger:active {
+  background: rgba(224,108,117,0.22);
+  border-color: var(--kal-danger);
+  transform: scale(0.96);
 }
 .kal-danger svg { width: 18px; height: 18px; }
 
@@ -742,12 +766,25 @@
   width: 100%; max-width: 100%;
   height: 100dvh; max-height: 100dvh;
   margin: 0; padding: 0; border: 0; border-radius: 0;
-  background: var(--kal-bg); color: var(--kal-text);
+  background: var(--kal-bg);
+  background-image:
+    radial-gradient(1000px 500px at 50% -10%, rgba(232,180,184,0.1), transparent 55%),
+    radial-gradient(800px 400px at 100% 100%, rgba(212,163,115,0.06), transparent 60%);
+  color: var(--kal-text);
 }
-.kal-sheet::backdrop { background: rgba(0,0,0,0.6); }
-.kal-sheet[open] { animation: kal-sheet-in 220ms cubic-bezier(0.16,1,0.3,1); }
+.kal-sheet::backdrop {
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: kal-backdrop-in 320ms ease both;
+}
+@keyframes kal-backdrop-in {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to   { opacity: 1; backdrop-filter: blur(4px); }
+}
+.kal-sheet[open] { animation: kal-sheet-in 420ms cubic-bezier(0.16,1,0.3,1); }
 @keyframes kal-sheet-in {
-  from { transform: translateY(100%); opacity: 0.3; }
+  from { transform: translateY(100%); opacity: 0.6; }
   to   { transform: translateY(0);    opacity: 1; }
 }
 .kal-sheet-body { display: flex; flex-direction: column; height: 100dvh; }
@@ -755,10 +792,16 @@
   position: sticky; top: 0; z-index: 2;
   display: grid; grid-template-columns: 44px 1fr 44px;
   align-items: center; gap: 0.6rem;
-  padding: calc(var(--kal-safe-top) + 0.5rem) 0.8rem 0.7rem;
-  background: rgba(10,12,18,0.95);
-  backdrop-filter: blur(18px);
+  padding: calc(var(--kal-safe-top) + 0.6rem) 0.9rem 0.8rem;
+  background: linear-gradient(180deg, rgba(13,9,16,0.96) 0%, rgba(13,9,16,0.85) 100%);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
   border-bottom: 1px solid var(--kal-border);
+}
+.kal-sheet-head::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kal-accent) 50%, transparent);
+  opacity: 0.5;
 }
 .kal-sheet-head h3 {
   margin: 0;
@@ -774,21 +817,34 @@
   width: 44px; height: 44px;
   display: grid; place-items: center;
   border-radius: 999px; color: var(--kal-text);
+  transition: background 240ms ease, color 240ms ease, transform 220ms cubic-bezier(0.16,1,0.3,1);
 }
-.kal-sheet-close:active { background: var(--kal-bg-soft); }
+.kal-sheet-close:active {
+  background: var(--kal-bg-soft);
+  color: var(--kal-accent);
+  transform: scale(0.9) rotate(90deg);
+}
 .kal-sheet-close svg { width: 22px; height: 22px; }
 .kal-sheet-scroll {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 1rem 1rem 1.5rem;
-  display: grid; gap: 1rem;
+  padding: 1.1rem 1rem 1.5rem;
+  display: grid; gap: 1.1rem;
+  scroll-behavior: smooth;
+  animation: kal-fade-in 360ms ease 80ms both;
 }
 .kal-sheet-foot {
   position: sticky; bottom: 0; z-index: 2;
-  display: grid; grid-template-columns: 1fr; gap: 0.5rem;
-  padding: 0.7rem 1rem calc(0.7rem + var(--kal-safe-bottom));
-  background: rgba(10,12,18,0.95);
-  backdrop-filter: blur(18px);
+  display: grid; grid-template-columns: 1fr; gap: 0.55rem;
+  padding: 0.8rem 1rem calc(0.8rem + var(--kal-safe-bottom));
+  background: linear-gradient(0deg, rgba(13,9,16,0.96) 0%, rgba(13,9,16,0.82) 100%);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
   border-top: 1px solid var(--kal-border);
+}
+.kal-sheet-foot::before {
+  content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kal-accent) 50%, transparent);
+  opacity: 0.4;
 }
 .kal-sheet-foot:has(.kal-danger:not(.hidden)) { grid-template-columns: auto 1fr; }
 
@@ -801,78 +857,203 @@
 }
 
 /* ---------- Chips ---------- */
-.kal-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.kal-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
 .kal-chips .cal-category-chip {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.5rem 0.9rem;
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.55rem 1rem;
   background: var(--kal-bg-card);
   border: 1.5px solid var(--kal-border);
   border-radius: 999px;
-  font-size: 0.88rem; font-weight: 600;
-  color: var(--kal-text); min-height: 40px;
+  font-size: 0.9rem; font-weight: 600;
+  color: var(--kal-text); min-height: 42px;
+  transition:
+    background 280ms ease,
+    border-color 280ms ease,
+    color 260ms ease,
+    transform 200ms cubic-bezier(0.16,1,0.3,1),
+    box-shadow 280ms ease;
 }
+.kal-chips .cal-category-chip:active { transform: scale(0.95); }
 .kal-chips .cal-category-chip span svg {
   width: 18px; height: 18px;
   color: var(--cat-color, var(--kal-accent));
+  transition: transform 260ms cubic-bezier(0.16,1,0.3,1);
 }
 .kal-chips .cal-category-chip.is-active {
-  background: color-mix(in srgb, var(--cat-color, var(--kal-accent)) 25%, var(--kal-bg-card));
+  background: color-mix(in srgb, var(--cat-color, var(--kal-accent)) 28%, var(--kal-bg-card));
   border-color: var(--cat-color, var(--kal-accent));
   color: #fff;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--cat-color, var(--kal-accent)) 35%, transparent);
 }
+.kal-chips .cal-category-chip.is-active span svg { transform: scale(1.15) rotate(-6deg); }
 
 /* ---------- Icon picker trigger ---------- */
 .kal-icon-picker {
-  display: grid; grid-template-columns: 44px 1fr 20px;
-  align-items: center; gap: 0.8rem;
-  padding: 0.8rem 1rem;
-  background: var(--kal-bg-soft);
+  display: grid; grid-template-columns: 48px 1fr 20px;
+  align-items: center; gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(160deg, var(--kal-bg-card), var(--kal-bg-soft));
   border: 1px solid var(--kal-border);
-  border-radius: 12px; min-height: 62px;
+  border-radius: 14px; min-height: 66px;
   color: var(--kal-text); text-align: left;
+  transition: border-color 260ms ease, background 240ms ease, transform 200ms cubic-bezier(0.16,1,0.3,1);
+  position: relative;
 }
-.kal-icon-picker:active { background: var(--kal-bg-card); }
+.kal-icon-picker:active {
+  transform: scale(0.985);
+  border-color: var(--kal-border-strong);
+}
 .kal-icon-picker-preview {
-  width: 44px; height: 44px;
+  width: 48px; height: 48px;
   display: grid; place-items: center;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  background: var(--kal-gradient-soft);
   color: var(--kal-accent);
+  border: 1px solid var(--kal-border-strong);
+  transition: transform 260ms cubic-bezier(0.16,1,0.3,1), box-shadow 260ms ease;
+}
+.kal-icon-picker:active .kal-icon-picker-preview {
+  transform: rotate(-4deg) scale(1.04);
+  box-shadow: 0 4px 14px var(--kal-accent-glow);
 }
 .kal-icon-picker-preview svg { width: 24px; height: 24px; }
-.kal-icon-picker-label { font-weight: 600; font-size: 0.95rem; }
-.kal-icon-picker svg { width: 18px; height: 18px; color: var(--kal-text-mute); }
+.kal-icon-picker-label {
+  font-weight: 600; font-size: 0.96rem;
+  color: var(--kal-text);
+  letter-spacing: 0.01em;
+}
+.kal-icon-picker > svg {
+  width: 18px; height: 18px; color: var(--kal-text-mute);
+  transition: transform 260ms ease, color 260ms ease;
+}
+.kal-icon-picker:active > svg {
+  transform: translateX(3px);
+  color: var(--kal-accent);
+}
 
 /* ---------- Icon search + grid ---------- */
 .kal-search {
   display: grid; grid-template-columns: 20px 1fr;
-  align-items: center; gap: 0.6rem;
-  padding: 0.8rem 1rem;
+  align-items: center; gap: 0.65rem;
+  padding: 0 1rem;
+  height: 52px;
   background: var(--kal-bg-soft);
   border: 1px solid var(--kal-border);
-  border-radius: 12px; min-height: 50px;
+  border-radius: 14px;
+  position: sticky; top: 0; z-index: 3;
+  transition: border-color 260ms ease, background 240ms ease, box-shadow 300ms ease;
 }
-.kal-search svg { width: 20px; height: 20px; color: var(--kal-text-mute); }
+.kal-search:focus-within {
+  border-color: var(--kal-accent);
+  background: var(--kal-bg-card);
+  box-shadow: 0 0 0 4px var(--kal-accent-soft), 0 4px 14px rgba(0,0,0,0.3);
+}
+.kal-search svg {
+  width: 20px; height: 20px;
+  color: var(--kal-text-mute);
+  transition: color 260ms ease, transform 260ms ease;
+}
+.kal-search:focus-within svg {
+  color: var(--kal-accent);
+  transform: scale(1.08);
+}
 .kal-search input {
   background: transparent; border: 0; padding: 0;
-  min-height: unset; border-radius: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  border-radius: 0;
+  font-size: 16px; /* iOS: kein Auto-Zoom */
+  line-height: 1.2;
+  color: var(--kal-text);
 }
-.kal-search input:focus { box-shadow: none; }
+.kal-search input::placeholder {
+  color: var(--kal-text-mute);
+  font-style: italic;
+  transition: opacity 240ms ease;
+}
+.kal-search input:focus { box-shadow: none; background: transparent; }
+.kal-search input:focus::placeholder { opacity: 0.5; }
 .kal-icon-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.55rem;
+  margin-top: 0.2rem;
 }
 .kal-icon-grid button {
   aspect-ratio: 1;
   display: grid; place-items: center;
-  background: var(--kal-bg-card);
+  background: linear-gradient(160deg, var(--kal-bg-card), var(--kal-bg-soft));
   border: 1px solid var(--kal-border);
-  border-radius: 12px; color: var(--kal-text);
-  min-height: 60px; padding: 0.4rem; position: relative;
+  border-radius: 14px; color: var(--kal-text);
+  min-height: 62px; padding: 0.4rem; position: relative;
+  overflow: hidden;
+  transition:
+    transform 220ms cubic-bezier(0.16,1,0.3,1),
+    background 260ms ease,
+    border-color 260ms ease,
+    color 220ms ease,
+    box-shadow 260ms ease;
+  animation: kal-icon-in 360ms cubic-bezier(0.16,1,0.3,1) both;
 }
-.kal-icon-grid button:active { background: var(--kal-bg-soft); }
+@keyframes kal-icon-in {
+  from { opacity: 0; transform: scale(0.86) translateY(4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.kal-icon-grid button::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at center, var(--kal-accent-soft) 0%, transparent 70%);
+  opacity: 0; transition: opacity 300ms ease;
+  pointer-events: none;
+}
+.kal-icon-grid button:active {
+  transform: scale(0.92);
+}
 .kal-icon-grid button.is-active {
-  background: var(--kal-accent-soft);
+  background: var(--kal-gradient-soft);
   border-color: var(--kal-accent);
   color: var(--kal-accent);
+  box-shadow: 0 6px 18px var(--kal-accent-glow), inset 0 1px 0 rgba(255,255,255,0.08);
 }
-.kal-icon-grid svg { width: 26px; height: 26px; }
+.kal-icon-grid button.is-active::before { opacity: 1; }
+.kal-icon-grid svg {
+  width: 26px; height: 26px;
+  transition: transform 260ms cubic-bezier(0.16,1,0.3,1);
+  position: relative; z-index: 1;
+}
+.kal-icon-grid button.is-active svg { transform: scale(1.14); }
+
+/* Stagger für die ersten Icons (ohne DOM-Änderung) */
+.kal-icon-grid button:nth-child(1)  { animation-delay: 0ms; }
+.kal-icon-grid button:nth-child(2)  { animation-delay: 20ms; }
+.kal-icon-grid button:nth-child(3)  { animation-delay: 40ms; }
+.kal-icon-grid button:nth-child(4)  { animation-delay: 60ms; }
+.kal-icon-grid button:nth-child(5)  { animation-delay: 80ms; }
+.kal-icon-grid button:nth-child(6)  { animation-delay: 100ms; }
+.kal-icon-grid button:nth-child(7)  { animation-delay: 120ms; }
+.kal-icon-grid button:nth-child(8)  { animation-delay: 140ms; }
+.kal-icon-grid button:nth-child(9)  { animation-delay: 160ms; }
+.kal-icon-grid button:nth-child(10) { animation-delay: 180ms; }
+.kal-icon-grid button:nth-child(11) { animation-delay: 200ms; }
+.kal-icon-grid button:nth-child(12) { animation-delay: 220ms; }
+.kal-icon-grid button:nth-child(n+13) { animation-delay: 240ms; }
+
+/* Leerer Zustand */
+.kal-icon-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--kal-text-mute);
+  font-style: italic;
+  font-family: var(--kal-font-display);
+  font-size: 1.1rem;
+}
+
+/* ========== RESPECT REDUCED MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+  .kal-shell *, .kal-shell *::before, .kal-shell *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    scroll-behavior: auto !important;
+  }
+}
