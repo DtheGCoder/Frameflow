@@ -5107,6 +5107,9 @@ body.admin-v2 {
 .frame-shell .frame-meta > .frame-meta-weather-group { justify-self: start; grid-column: 1; }
 .frame-shell .frame-meta > .frame-counter { justify-self: center; grid-column: 2; }
 .frame-shell .frame-meta > .frame-clock   { justify-self: end;    grid-column: 3; }
+/* Make sure the clock never accidentally disappears when the weather-group
+   wrapper is present. */
+.frame-shell .frame-clock:not(.hidden) { display: inline-flex !important; }
 
 /* --- P7p: Safety net so bare SVG paths/circles never render black ---
    SVG default fill is black. For icons whose <path>/<circle>/<rect>
