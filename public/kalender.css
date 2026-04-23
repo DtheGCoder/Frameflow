@@ -1058,21 +1058,100 @@
 
 /* ========== BAROCKE ORNAMENTE / STUCK ========== */
 
-/* Filigran unter dem Haupttitel */
-.kal-title-flourish {
-  position: sticky;
-  top: calc(var(--kal-topbar-h) + var(--kal-safe-top) - 1px);
-  z-index: 49;
-  display: flex; justify-content: center;
-  padding: 0 0 2px;
+/* Seitliche goldene Zierleisten links und rechts am Bildschirmrand */
+.kal-side-rail {
+  position: fixed;
+  top: calc(var(--kal-topbar-h) + var(--kal-viewbar-h) + var(--kal-navbar-h) + var(--kal-safe-top) + 12px);
+  bottom: calc(var(--kal-bottom-h) + var(--kal-safe-bottom) + 12px);
+  width: 14px;
+  z-index: 2;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(13,9,16,0.92), rgba(13,9,16,0));
+  opacity: 0.85;
 }
-.kal-title-flourish svg {
-  color: var(--kal-accent);
+.kal-side-rail-left  { left: 0; }
+.kal-side-rail-right { right: 0; }
+.kal-side-rail::before {
+  content: ''; position: absolute;
+  top: 0; bottom: 0;
+  left: 50%; width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg,
+    transparent 0%,
+    var(--kal-accent) 8%,
+    var(--kal-accent-2) 30%,
+    var(--kal-gold) 50%,
+    var(--kal-accent-2) 70%,
+    var(--kal-accent) 92%,
+    transparent 100%);
   opacity: 0.55;
-  filter: drop-shadow(0 0 6px var(--kal-accent-glow));
+  box-shadow: 0 0 8px var(--kal-accent-glow);
 }
+.kal-side-rail::after {
+  content: ''; position: absolute;
+  top: 50%; left: 50%;
+  width: 12px; height: 12px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--kal-gradient);
+  box-shadow: 0 0 10px var(--kal-accent-glow);
+  border-radius: 2px;
+}
+
+/* Krone im Titel */
+.kal-title-wrap {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px; min-width: 0;
+  line-height: 1;
+}
+.kal-crown {
+  color: var(--kal-accent);
+  filter: drop-shadow(0 0 6px var(--kal-accent-glow));
+  animation: kal-crown-shimmer 4s ease-in-out infinite;
+}
+@keyframes kal-crown-shimmer {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--kal-accent-glow)); }
+  50%      { filter: drop-shadow(0 0 10px var(--kal-accent-glow)) drop-shadow(0 0 2px var(--kal-gold)); }
+}
+
+/* Kartusche unter Titel: echte Barock-Ranken + Fleur-de-Lys */
+.kal-cartouche {
+  position: sticky;
+  top: calc(var(--kal-topbar-h) + var(--kal-safe-top));
+  z-index: 48;
+  padding: 4px 1.2rem 6px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(13,9,16,0.95) 30%, rgba(13,9,16,0.7) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.kal-cartouche svg {
+  color: var(--kal-accent);
+  opacity: 0.75;
+  filter: drop-shadow(0 0 4px var(--kal-accent-glow));
+  display: block;
+  width: 100%;
+  height: 26px;
+  animation: kal-cartouche-in 900ms cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes kal-cartouche-in {
+  from { opacity: 0; transform: scaleX(0.5); }
+  to   { opacity: 0.75; transform: scaleX(1); }
+}
+.kal-cartouche::before,
+.kal-cartouche::after {
+  content: ''; position: absolute;
+  top: 50%; width: 18px; height: 18px;
+  transform: translateY(-50%) rotate(45deg);
+  border: 1px solid var(--kal-accent);
+  border-radius: 3px;
+  opacity: 0.45;
+  box-shadow: 0 0 6px var(--kal-accent-glow);
+}
+.kal-cartouche::before { left: 14px; }
+.kal-cartouche::after  { right: 14px; }
+
+/* Filigran unter dem Haupttitel (legacy, deaktiviert) */
+.kal-title-flourish { display: none; }
 
 /* Geschwungene Flourish-Linien unter Panel-Überschriften */
 .kal-flourish {
@@ -1091,13 +1170,17 @@
   to   { opacity: 0.7; transform: scaleX(1); }
 }
 
-/* Stuck-Oberfläche: Textur + Goldrahmen */
+/* Stuck-Oberfläche: Brokat-Textur + Goldrahmen */
 .kal-surface.kal-stucco {
   background:
+    /* Brokat-Muster: Rauten */
+    linear-gradient(45deg,  rgba(232,180,184,0.025) 25%, transparent 25%, transparent 75%, rgba(232,180,184,0.025) 75%),
+    linear-gradient(-45deg, rgba(212,175,55,0.02) 25%, transparent 25%, transparent 75%, rgba(212,175,55,0.02) 75%),
     radial-gradient(circle at 20% 30%, rgba(232,180,184,0.05) 0, transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(212,163,115,0.04) 0, transparent 50%),
     radial-gradient(circle at 50% 100%, rgba(212,175,55,0.05) 0, transparent 60%),
     linear-gradient(180deg, var(--kal-bg-card) 0%, var(--kal-bg-soft) 100%);
+  background-size: 28px 28px, 28px 28px, auto, auto, auto, auto;
   position: relative;
   box-shadow:
     0 10px 30px rgba(0,0,0,0.5),
@@ -1108,7 +1191,7 @@
   content: ''; position: absolute;
   inset: 6px;
   border-radius: calc(var(--kal-radius-lg) - 8px);
-  border: 1px solid rgba(232,180,184,0.1);
+  border: 1px solid rgba(232,180,184,0.12);
   pointer-events: none;
 }
 
@@ -1155,14 +1238,20 @@
   50%      { transform: translateX(40%);  opacity: 1; }
 }
 
-/* Damast-Punktmuster Body-Overlay */
+/* Königliches Damast-Muster auf dem Body — deutlicher */
 .kal-shell::before {
   content: ''; position: fixed; inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: radial-gradient(circle at 1px 1px, rgba(232,180,184,0.04) 1px, transparent 1.5px);
-  background-size: 22px 22px;
-  opacity: 0.5;
+  background-image:
+    /* Punkte */
+    radial-gradient(circle at 1px 1px, rgba(232,180,184,0.055) 1px, transparent 1.5px),
+    /* Diamant-Raute */
+    linear-gradient(45deg, rgba(212,175,55,0.03) 25%, transparent 25%, transparent 75%, rgba(212,175,55,0.03) 75%),
+    linear-gradient(-45deg, rgba(232,180,184,0.025) 25%, transparent 25%, transparent 75%, rgba(232,180,184,0.025) 75%);
+  background-size: 22px 22px, 44px 44px, 44px 44px;
+  background-position: 0 0, 0 0, 22px 22px;
+  opacity: 0.7;
 }
 .kal-shell > * { position: relative; z-index: 1; }
 
@@ -1182,18 +1271,30 @@
 .kal-primary:active::before { opacity: 0.75; animation: kal-spin 3s linear infinite; }
 @keyframes kal-spin { to { transform: rotate(360deg); } }
 
-/* Kategorie-Karten: Goldleiste links */
-.kal-category-list .cal-category-card { position: relative; }
+/* Kategorie-Karten: Goldleiste links + Wappenkranz rechts */
+.kal-category-list .cal-category-card { position: relative; overflow: hidden; }
 .kal-category-list .cal-category-card::before {
   content: ''; position: absolute;
   left: 0; top: 14%; bottom: 14%;
   width: 2px; border-radius: 2px;
   background: var(--kal-gradient);
-  opacity: 0.55;
+  opacity: 0.6;
   box-shadow: 0 0 6px var(--kal-accent-glow);
   transition: opacity 260ms ease, width 260ms ease;
 }
+.kal-category-list .cal-category-card::after {
+  /* barocker Eckenbogen rechts oben */
+  content: ''; position: absolute;
+  top: 6px; right: 6px;
+  width: 16px; height: 16px;
+  border-top: 1px solid var(--kal-accent);
+  border-right: 1px solid var(--kal-accent);
+  border-top-right-radius: 12px;
+  opacity: 0.35;
+  transition: opacity 260ms ease;
+}
 .kal-category-list .cal-category-card:active::before { opacity: 1; width: 3px; }
+.kal-category-list .cal-category-card:active::after  { opacity: 0.8; }
 
 /* Kategorie-Icon metallic sheen */
 .kal-category-list .cal-category-icon { position: relative; overflow: hidden; }
@@ -1210,7 +1311,7 @@
   80% { left: 130%; opacity: 0.9; }
 }
 
-/* Switch-Track: schimmernde Innenlinie */
+/* Switch-Track schimmer */
 .kal-switch-track::before {
   content: ''; position: absolute; inset: 2px;
   border-radius: 999px;
@@ -1218,26 +1319,13 @@
   pointer-events: none;
 }
 
-/* FAB: Juwel-Ring */
+/* FAB Juwel-Ring */
 .kal-fab::after {
   content: ''; position: absolute; inset: 3px;
   border-radius: 50%;
   border: 1px dashed rgba(255,255,255,0.35);
   animation: kal-spin 14s linear infinite;
   pointer-events: none;
-}
-
-/* Topbar: marmorierte Reflektion */
-.kal-topbar::before {
-  content: ''; position: absolute;
-  left: 10%; right: 10%; top: 50%;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%, rgba(232,180,184,0.12) 30%,
-    rgba(212,175,55,0.2) 50%, rgba(232,180,184,0.12) 70%, transparent 100%);
-  transform: translateY(-50%);
-  pointer-events: none;
-  opacity: 0.6;
 }
 
 /* Sheet-Header: dekorativer Stern */
@@ -1253,7 +1341,7 @@
   filter: drop-shadow(0 0 4px var(--kal-accent-glow));
 }
 
-/* Panel-Heads: Goldunterstrich */
+/* Panel-Heads Goldunterstrich */
 .kal-panel-head h2 { position: relative; padding-bottom: 0.4rem; }
 .kal-panel-head h2::after,
 .kal-panel-head-title::after {
@@ -1272,6 +1360,48 @@
 .kal-ornament {
   color: var(--kal-accent);
   filter: drop-shadow(0 0 8px var(--kal-accent-glow));
+}
+
+/* Kleiner goldener "Wappen-Rand" um die Topbar-Buttons */
+.kal-icon-btn {
+  background:
+    radial-gradient(circle at center, transparent 65%, rgba(232,180,184,0.06) 100%);
+}
+.kal-icon-btn::before {
+  content: ''; position: absolute; inset: 4px;
+  border-radius: 50%;
+  border: 1px solid rgba(232,180,184,0.15);
+  pointer-events: none;
+  transition: border-color 240ms ease, transform 260ms ease;
+}
+.kal-icon-btn:active::before {
+  border-color: var(--kal-accent);
+  transform: scale(1.08);
+}
+
+/* Navbar: Goldlinien-Rahmen statt nur Border */
+.kal-navbar {
+  background: linear-gradient(180deg, rgba(13,9,16,0.9) 0%, rgba(23,16,28,0.8) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(232,180,184,0.07),
+    0 1px 0 var(--kal-border);
+}
+.kal-navbar::before {
+  content: ''; position: absolute;
+  left: 10%; right: 10%; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kal-accent-2) 30%, var(--kal-gold) 50%, var(--kal-accent-2) 70%, transparent);
+  opacity: 0.45;
+}
+
+/* Today-Button: doppelter Rahmen */
+.kal-today-btn {
+  position: relative;
+}
+.kal-today-btn::after {
+  content: ''; position: absolute; inset: 3px;
+  border-radius: 10px;
+  border: 1px solid rgba(232,180,184,0.18);
+  pointer-events: none;
 }
 
 /* ========== RESPECT REDUCED MOTION ========== */
