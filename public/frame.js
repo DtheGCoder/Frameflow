@@ -1024,6 +1024,44 @@ function scheduleWeather() {
   refreshWeather();
 }
 
+// ---------- local sensors (DHT22 + CCS811) ----------
+const frameSensors = el('frameSensors');
+const frameSensorTemp = el('frameSensorTemp');
+const frameSensorHum = el('frameSensorHum');
+const frameSensorAqi = el('frameSensorAqi');
+const frameSensorAqiLabel = el('frameSensorAqiLabel');
+let sensorsTimer = null;
+
+async function refreshSensors() {
+  if (!frameSensors) return;
+  try {
+    const r = await fetch('/api/sensors', { cache: 'no-store' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    const hasAny = d.available && (d.temperature != null || d.humidity != null || d.eco2 != null);
+    if (!hasAny) {
+      frameSensors.classList.add('hidden');
+      return;
+    }
+    frameSensors.classList.remove('hidden');
+    frameSensors.classList.toggle('is-stale', !!d.stale);
+    if (frameSensorTemp) frameSensorTemp.textContent = d.temperature != null ? `${d.temperature.toFixed(1)}°` : '--°';
+    if (frameSensorHum) frameSensorHum.textContent = d.humidity != null ? `${Math.round(d.humidity)}%` : '--%';
+    if (frameSensorAqi) frameSensorAqi.textContent = d.eco2 != null ? `${d.eco2}` : '--';
+    if (frameSensorAqiLabel) frameSensorAqiLabel.textContent = d.aqi && d.aqi !== '—' ? `CO₂ · ${d.aqi}` : 'Luftqualität';
+  } catch (err) {
+    frameSensors.classList.add('hidden');
+  }
+}
+
+function scheduleSensors() {
+  if (!sensorsTimer) {
+    sensorsTimer = window.setInterval(refreshSensors, 15 * 1000);
+  }
+  refreshSensors();
+}
+scheduleSensors();
+
 
 window.addEventListener('beforeunload', () => {
   window.clearTimeout(slideshowTimer);

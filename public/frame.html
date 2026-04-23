@@ -88,6 +88,20 @@
             <small id="frameWeatherLoc"></small>
           </span>
         </div>
+        <div id="frameSensors" class="frame-sensors hidden" aria-live="polite">
+          <span class="frame-sensor">
+            <svg class="frame-sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 0 0-3 3v8.2a4.5 4.5 0 1 0 6 0V6a3 3 0 0 0-3-3z"/><circle cx="12" cy="17" r="1.6" fill="currentColor" stroke="none"/><path d="M12 8v7"/></svg>
+            <span class="frame-sensor-body"><strong id="frameSensorTemp">--°</strong><small>Raum</small></span>
+          </span>
+          <span class="frame-sensor">
+            <svg class="frame-sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 5 6 8 6 12a6 6 0 1 1-12 0c0-4 3-7 6-12z"/><path d="M9 14a3 3 0 0 0 2 3" opacity="0.6"/></svg>
+            <span class="frame-sensor-body"><strong id="frameSensorHum">--%</strong><small>Luft</small></span>
+          </span>
+          <span class="frame-sensor">
+            <svg class="frame-sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h10a3 3 0 1 0-3-3"/><path d="M3 14h13a3 3 0 1 1-3 3"/><path d="M5 18h8"/></svg>
+            <span class="frame-sensor-body"><strong id="frameSensorAqi">--</strong><small id="frameSensorAqiLabel">Luftqualität</small></span>
+          </span>
+        </div>
         <span id="frameCounter" class="frame-counter hidden"></span>
         <span id="frameClock" class="frame-clock hidden"></span>
       </div>

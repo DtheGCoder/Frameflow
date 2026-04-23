@@ -361,6 +361,32 @@ app.get('/api/calendar', (_req, res) => {
   res.json(serializeCalendar(appState.calendar));
 });
 
+// Local sensors (DHT22 + CCS811) — see scripts/sensors.py.
+// The Python daemon writes /run/frameflow/sensors.json every 10s; we just
+// serve whatever is on disk so this stays dead-simple and failure-tolerant.
+const SENSOR_FILE = process.env.FRAMEFLOW_SENSOR_FILE || '/run/frameflow/sensors.json';
+const SENSOR_STALE_MS = 2 * 60 * 1000; // 2 minutes
+app.get('/api/sensors', (_req, res) => {
+  fs.readFile(SENSOR_FILE, 'utf8', (err, raw) => {
+    if (err) {
+      return res.json({ available: false, reason: 'no-sensor-file' });
+    }
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return res.json({ available: false, reason: 'parse-error' });
+    }
+    const age = Date.now() - (Number(data.updatedAt) || 0);
+    res.json({
+      available: true,
+      stale: age > SENSOR_STALE_MS,
+      ageMs: age,
+      ...data,
+    });
+  });
+});
+
 // Weather proxy — avoids any CORS/DNS quirks on kiosk/Pi.
 // Uses Open-Meteo (free, no API key required).
 const weatherCache = new Map(); // key=location -> { at, payload }
