@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
+    <meta name="theme-color" content="#0b0d12" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Kalender</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="/static/kalender.css" />
+  </head>
+  <body class="kal-shell">
+
+    <!-- ============ TOP BAR ============ -->
+    <header class="kal-topbar">
+      <button id="kalMenuToggle" class="kal-icon-btn" type="button" aria-label="Menü">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <h1 id="calendarTitle" class="kal-title">Heute</h1>
+      <button id="kalTodayBtn" class="kal-icon-btn" type="button" aria-label="Heute">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </button>
+    </header>
+
+    <!-- ============ VIEW SWITCHER ============ -->
+    <nav class="kal-viewbar" id="calendarViewTabs" role="tablist">
+      <button type="button" class="is-active" data-view="day">Tag</button>
+      <button type="button" data-view="week">Woche</button>
+      <button type="button" data-view="month">Monat</button>
+    </nav>
+
+    <!-- ============ NAV (prev / next) ============ -->
+    <div class="kal-navbar">
+      <button id="calendarPrev" class="kal-nav-btn" type="button" aria-label="Zurück">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button id="calendarToday" class="kal-today-btn" type="button">Heute</button>
+      <button id="calendarNext" class="kal-nav-btn" type="button" aria-label="Weiter">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <!-- ============ CALENDAR SURFACE (reused by calendar.js) ============ -->
+    <main class="kal-main">
+      <section id="calendarTab" class="kal-panel is-active">
+        <div id="calendarSurface" class="kal-surface">
+          <div id="calendarViewContent" class="kal-view-content"></div>
+        </div>
+      </section>
+
+      <section id="categoriesTab" class="kal-panel">
+        <div class="kal-panel-head">
+          <h2>Kategorien</h2>
+          <button id="openNewCategory" class="kal-primary" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Neu
+          </button>
+        </div>
+        <div id="categoryList" class="kal-category-list"></div>
+      </section>
+
+      <section id="settingsTab" class="kal-panel">
+        <h2 class="kal-panel-head-title">Einstellungen</h2>
+        <form id="calendarSettingsForm" class="kal-settings">
+          <label class="kal-field">
+            <span>Termine im Foto-Widget</span>
+            <input name="photoWidgetMax" type="number" min="1" max="6" step="1" inputmode="numeric" />
+          </label>
+          <label class="kal-switch">
+            <input name="showPhotoWidget" type="checkbox" />
+            <span class="kal-switch-track"><span class="kal-switch-thumb"></span></span>
+            <span class="kal-switch-label">Terminvorschau im Foto-Modus</span>
+          </label>
+          <label class="kal-switch">
+            <input name="swipeEnabled" type="checkbox" />
+            <span class="kal-switch-track"><span class="kal-switch-thumb"></span></span>
+            <span class="kal-switch-label">Wischgesten zwischen Foto &amp; Kalender</span>
+          </label>
+          <button class="kal-primary kal-primary-block" type="submit">Speichern</button>
+        </form>
+      </section>
+    </main>
+
+    <!-- ============ BOTTOM TAB BAR ============ -->
+    <nav class="kal-bottombar" id="mainTabs" role="tablist">
+      <button type="button" data-tab="calendar" class="is-active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+        <span>Kalender</span>
+      </button>
+      <button type="button" data-tab="categories">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span>Kategorien</span>
+      </button>
+      <button type="button" data-tab="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <span>Mehr</span>
+      </button>
+    </nav>
+
+    <!-- ============ FAB (neuer Termin) ============ -->
+    <button id="openNewEvent" class="kal-fab" type="button" aria-label="Neuer Termin">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+
+    <!-- ============ EVENT DIALOG ============ -->
+    <dialog id="eventDialog" class="kal-sheet">
+      <form id="eventForm" method="dialog" class="kal-sheet-body">
+        <header class="kal-sheet-head">
+          <button type="button" class="kal-sheet-close" data-close aria-label="Schließen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <h3 id="eventDialogTitle">Neuer Termin</h3>
+          <span></span>
+        </header>
+        <div class="kal-sheet-scroll">
+          <input type="hidden" name="eventId" />
+          <label class="kal-field">
+            <span>Titel</span>
+            <input name="title" type="text" maxlength="120" placeholder="z. B. Zahnarzt" required autocomplete="off" />
+          </label>
+          <label class="kal-field">
+            <span>Notiz</span>
+            <textarea name="notes" rows="3" maxlength="240" placeholder="Optional"></textarea>
+          </label>
+          <label class="kal-switch kal-switch-inset">
+            <input name="allDay" type="checkbox" />
+            <span class="kal-switch-track"><span class="kal-switch-thumb"></span></span>
+            <span class="kal-switch-label">Ganztägig</span>
+          </label>
+          <div class="kal-time-grid">
+            <label class="kal-field">
+              <span>Start</span>
+              <input name="startAt" type="datetime-local" required />
+            </label>
+            <label class="kal-field">
+              <span>Ende</span>
+              <input name="endAt" type="datetime-local" required />
+            </label>
+          </div>
+          <div class="kal-field">
+            <span>Kategorie</span>
+            <div id="eventCategoryChips" class="kal-chips"></div>
+          </div>
+          <div class="kal-field">
+            <span>Symbol</span>
+            <button type="button" id="eventIconTrigger" class="kal-icon-picker">
+              <span class="kal-icon-picker-preview" id="eventIconPreview"></span>
+              <span class="kal-icon-picker-label" id="eventIconLabel">Symbol wählen</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+            <input type="hidden" name="icon" />
+          </div>
+        </div>
+        <footer class="kal-sheet-foot">
+          <button type="button" id="eventDeleteButton" class="kal-danger hidden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13a2 2 0 002 2h6a2 2 0 002-2l1-13M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/></svg>
+            Löschen
+          </button>
+          <button type="submit" class="kal-primary kal-primary-block">Speichern</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <!-- ============ CATEGORY DIALOG ============ -->
+    <dialog id="categoryDialog" class="kal-sheet">
+      <form id="categoryForm" method="dialog" class="kal-sheet-body">
+        <header class="kal-sheet-head">
+          <button type="button" class="kal-sheet-close" data-close aria-label="Schließen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <h3 id="categoryDialogTitle">Neue Kategorie</h3>
+          <span></span>
+        </header>
+        <div class="kal-sheet-scroll">
+          <input type="hidden" name="categoryId" />
+          <label class="kal-field">
+            <span>Name</span>
+            <input name="name" type="text" maxlength="80" placeholder="z. B. Ärzte" required autocomplete="off" />
+          </label>
+          <label class="kal-field">
+            <span>Farbe</span>
+            <input name="color" type="color" value="#f59e0b" />
+          </label>
+          <div class="kal-field">
+            <span>Symbol</span>
+            <button type="button" id="categoryIconTrigger" class="kal-icon-picker">
+              <span class="kal-icon-picker-preview" id="categoryIconPreview"></span>
+              <span class="kal-icon-picker-label" id="categoryIconLabel">Symbol wählen</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+            <input type="hidden" name="icon" />
+          </div>
+        </div>
+        <footer class="kal-sheet-foot">
+          <button type="button" id="categoryDeleteButton" class="kal-danger hidden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13a2 2 0 002 2h6a2 2 0 002-2l1-13M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/></svg>
+            Löschen
+          </button>
+          <button type="submit" class="kal-primary kal-primary-block">Speichern</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <!-- ============ ICON PICKER ============ -->
+    <dialog id="iconPickerDialog" class="kal-sheet">
+      <div class="kal-sheet-body">
+        <header class="kal-sheet-head">
+          <button type="button" class="kal-sheet-close" data-close aria-label="Schließen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <h3>Symbol wählen</h3>
+          <span></span>
+        </header>
+        <div class="kal-sheet-scroll">
+          <label class="kal-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+            <input id="iconSearchInput" type="search" placeholder="Suchen…" />
+          </label>
+          <div id="iconGrid" class="kal-icon-grid"></div>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/static/calendar-core.js"></script>
+    <script src="/static/calendar.js" defer></script>
+  </body>
+</html>
