@@ -67,6 +67,8 @@ while true; do
     --overscroll-history-navigation=0 \\
     --check-for-update-interval=31536000 \\
     --ignore-certificate-errors \\
+    --password-store=basic \\
+    --use-mock-keychain \\
     --start-maximized \\
     --app="\$URL" \\
     || true
