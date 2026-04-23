@@ -40,7 +40,7 @@
   --kal-topbar-h: 62px;
   --kal-viewbar-h:52px;
   --kal-navbar-h: 54px;
-  --kal-bottom-h: 68px;
+  --kal-bottom-h: 76px;
   --kal-safe-bottom: env(safe-area-inset-bottom, 0px);
   --kal-safe-top:    env(safe-area-inset-top, 0px);
 
@@ -725,7 +725,7 @@
 .kal-bottombar {
   position: fixed; left: 0; right: 0; bottom: 0;
   height: calc(var(--kal-bottom-h) + var(--kal-safe-bottom));
-  padding-bottom: var(--kal-safe-bottom);
+  padding: 0.35rem 0 calc(var(--kal-safe-bottom) + 0.35rem);
   z-index: 55;
   display: grid; grid-template-columns: repeat(3, 1fr);
   background: linear-gradient(180deg, rgba(13,9,16,0.82) 0%, rgba(13,9,16,0.96) 100%);
@@ -741,21 +741,29 @@
 .kal-bottombar button {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 4px;
+  padding: 0.35rem 0.2rem;
   color: var(--kal-text-mute);
   font-family: var(--kal-font-body);
-  font-size: 0.72rem; font-weight: 600;
+  font-size: 0.7rem; font-weight: 600;
   letter-spacing: 0.03em;
   transition: color 160ms, transform 120ms;
   position: relative;
+  min-height: 0;
 }
-.kal-bottombar button svg { width: 24px; height: 24px; transition: transform 200ms; }
-.kal-bottombar button.is-active {
-  color: var(--kal-accent);
+.kal-bottombar button svg {
+  width: 22px; height: 22px;
+  flex-shrink: 0;
+  transition: transform 200ms;
 }
-.kal-bottombar button.is-active svg { transform: translateY(-2px) scale(1.1); }
+.kal-bottombar button span {
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.kal-bottombar button.is-active { color: var(--kal-accent); }
+.kal-bottombar button.is-active svg { transform: translateY(-1px) scale(1.08); }
 .kal-bottombar button.is-active::before {
-  content: ''; position: absolute; top: 6px;
-  width: 28px; height: 3px; border-radius: 2px;
+  content: ''; position: absolute; top: 2px;
+  width: 24px; height: 2.5px; border-radius: 2px;
   background: var(--kal-gradient);
   box-shadow: 0 2px 8px var(--kal-accent-glow);
 }
