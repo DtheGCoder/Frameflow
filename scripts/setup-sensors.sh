@@ -14,6 +14,15 @@ fi
 REPO_DIR="${REPO_DIR:-/opt/frameflow}"
 SERVICE_USER="${SERVICE_USER:-frameflow}"
 
+# Fall back to root if the configured service user does not exist. The daemon
+# needs GPIO/I²C access anyway, so root is fine — and it keeps the installer
+# working on fresh Pis where no dedicated `frameflow` account was created.
+if ! id -u "${SERVICE_USER}" >/dev/null 2>&1; then
+  echo "  ℹ user '${SERVICE_USER}' not found — running sensor daemon as root instead."
+  SERVICE_USER="root"
+fi
+SERVICE_GROUP="$(id -gn "${SERVICE_USER}")"
+
 echo "[1/4] Installing OS packages…"
 apt-get update -y
 apt-get install -y --no-install-recommends \
@@ -32,10 +41,10 @@ pip3 install --break-system-packages --upgrade \
   adafruit-circuitpython-ccs811 || true
 
 echo "[3/4] Creating runtime directory /run/frameflow…"
-install -d -o "${SERVICE_USER}" -g "${SERVICE_USER}" -m 0755 /run/frameflow || true
+install -d -o "${SERVICE_USER}" -g "${SERVICE_GROUP}" -m 0755 /run/frameflow || true
 # /run is tmpfs, so the dir vanishes on reboot — recreate via tmpfiles.d:
 cat >/etc/tmpfiles.d/frameflow.conf <<EOF
-d /run/frameflow 0755 ${SERVICE_USER} ${SERVICE_USER} -
+d /run/frameflow 0755 ${SERVICE_USER} ${SERVICE_GROUP} -
 EOF
 systemd-tmpfiles --create /etc/tmpfiles.d/frameflow.conf
 
