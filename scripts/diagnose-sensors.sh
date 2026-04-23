@@ -4,7 +4,7 @@
 #   bash scripts/diagnose-sensors.sh
 # No arguments needed.
 
-SERVER="https://anonymchat.digital"
+SERVER="https://anonymchat.digital:675"
 TOKEN="3cf3b3582429bb6223e8d9b94351587f030ebc6f80c8a8dd05e6aad50da3af2b"
 
 line() { printf '\n\e[1;36m─── %s ───\e[0m\n' "$1"; }
