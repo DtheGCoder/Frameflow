@@ -15,7 +15,7 @@ if [[ $EUID -eq 0 ]]; then
   exit 1
 fi
 
-FRAMEFLOW_URL="${FRAMEFLOW_URL:-https://anonymchat.digital:675/}"
+FRAMEFLOW_URL="${FRAMEFLOW_URL:-https://anonymchat.digital/frame}"
 AUTOSTART_DIR="${AUTOSTART_DIR:-$HOME/.config/autostart}"
 
 # Detect the browser binary.
