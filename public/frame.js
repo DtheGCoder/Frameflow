@@ -1032,10 +1032,10 @@ const frameSensorAqiLabel = el('frameSensorAqiLabel');
 let sensorsTimer = null;
 
 function aqiState(eco2) {
-  if (eco2 == null) return { key: 'unknown', label: '—' };
-  if (eco2 < 800) return { key: 'fresh', label: 'frisch' };
-  if (eco2 < 1500) return { key: 'stale', label: 'müffelig' };
-  return { key: 'toxic', label: 'giftig' };
+  if (eco2 == null) return 'unknown';
+  if (eco2 < 800) return 'fresh';
+  if (eco2 < 1500) return 'stale';
+  return 'toxic';
 }
 
 async function refreshSensors() {
@@ -1053,9 +1053,12 @@ async function refreshSensors() {
     frameSensors.classList.toggle('is-stale', !!d.stale);
     if (frameSensorTemp) frameSensorTemp.textContent = d.temperature != null ? `${d.temperature.toFixed(1)}°` : '--°';
     if (frameSensorHum) frameSensorHum.textContent = d.humidity != null ? `${Math.round(d.humidity)}%` : '--%';
-    const state = aqiState(d.eco2);
-    frameSensors.dataset.aqi = state.key;
-    if (frameSensorAqiLabel) frameSensorAqiLabel.textContent = state.label;
+    frameSensors.dataset.aqi = aqiState(d.eco2);
+    // Prefer the German label from the Pi; fall back to a short one locally.
+    const label = (d.aqi && d.aqi !== '—' && d.aqi !== '-')
+      ? d.aqi
+      : (d.eco2 == null ? '—' : (d.eco2 < 800 ? 'frisch' : d.eco2 < 1500 ? 'müffelig' : 'giftig'));
+    if (frameSensorAqiLabel) frameSensorAqiLabel.textContent = label;
   } catch (err) {
     frameSensors.classList.add('hidden');
   }
