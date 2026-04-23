@@ -75,6 +75,10 @@ Environment=FRAMEFLOW_DHT_PIN=D4
 Environment=FRAMEFLOW_SENSOR_INTERVAL=10
 Environment=FRAMEFLOW_SENSOR_HTTP_PORT=8787
 Environment=FRAMEFLOW_SENSOR_HTTP_BIND=0.0.0.0
+# Optional push to a remote Frameflow server (recommended when this Pi has no
+# fixed IP).  Override with:  sudo systemctl edit frameflow-sensors
+#Environment=FRAMEFLOW_PUSH_URL=https://your-server.example/api/sensors/ingest
+#Environment=FRAMEFLOW_PUSH_TOKEN=change-me-to-a-long-random-string
 
 [Install]
 WantedBy=multi-user.target

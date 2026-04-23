@@ -33,6 +33,8 @@ import os
 import sys
 import threading
 import time
+import urllib.error
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -44,6 +46,14 @@ POLL_INTERVAL = float(os.environ.get("FRAMEFLOW_SENSOR_INTERVAL", "10"))
 # Set FRAMEFLOW_SENSOR_HTTP_PORT=0 to disable.
 HTTP_PORT = int(os.environ.get("FRAMEFLOW_SENSOR_HTTP_PORT", "8787"))
 HTTP_BIND = os.environ.get("FRAMEFLOW_SENSOR_HTTP_BIND", "0.0.0.0")
+
+# Optional push target: every reading is POSTed as JSON to this URL with the
+# shared secret in the X-Sensor-Token header.  Example:
+#   FRAMEFLOW_PUSH_URL=https://anonymchat.digital/api/sensors/ingest
+#   FRAMEFLOW_PUSH_TOKEN=some-long-random-string
+PUSH_URL = os.environ.get("FRAMEFLOW_PUSH_URL", "").strip()
+PUSH_TOKEN = os.environ.get("FRAMEFLOW_PUSH_TOKEN", "").strip()
+PUSH_TIMEOUT = float(os.environ.get("FRAMEFLOW_PUSH_TIMEOUT", "5"))
 
 # ---------------------------------------------------------------------------
 # Lazy imports so the script still starts with a clear error if a library is
@@ -129,6 +139,33 @@ def start_http_server():
         f"[frameflow-sensors] serving http://{HTTP_BIND}:{HTTP_PORT}/sensors\n"
     )
     return srv
+
+
+def push_reading(payload: dict) -> None:
+    """POST the latest reading to the Frameflow server. Silent on errors."""
+    if not PUSH_URL:
+        return
+    try:
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            PUSH_URL,
+            data=body,
+            method="POST",
+            headers={
+                "Content-Type": "application/json",
+                "X-Sensor-Token": PUSH_TOKEN,
+                "User-Agent": "frameflow-sensors/1.0",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=PUSH_TIMEOUT) as resp:
+            if resp.status >= 300:
+                sys.stderr.write(
+                    f"[frameflow-sensors] push HTTP {resp.status}\n"
+                )
+    except urllib.error.HTTPError as exc:
+        sys.stderr.write(f"[frameflow-sensors] push {exc.code}: {exc.reason}\n")
+    except Exception as exc:
+        sys.stderr.write(f"[frameflow-sensors] push failed: {exc}\n")
 
 
 def main() -> int:
@@ -218,6 +255,13 @@ def main() -> int:
             write_json(entry)
         except Exception as exc:
             sys.stderr.write(f"[frameflow-sensors] write failed: {exc}\n")
+
+        # Push to the remote Frameflow server in a background thread so a slow
+        # network doesn't block the poll cadence.
+        if PUSH_URL:
+            threading.Thread(
+                target=push_reading, args=(dict(entry),), daemon=True
+            ).start()
 
         time.sleep(POLL_INTERVAL)
 

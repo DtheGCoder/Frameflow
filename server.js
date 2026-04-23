@@ -362,14 +362,19 @@ app.get('/api/calendar', (_req, res) => {
 });
 
 // Local sensors (DHT22 + CCS811) — see scripts/sensors.py.
-// The Python daemon runs on a remote Raspberry Pi and publishes values over
-// HTTP (default http://<pi>:8787/sensors).  As a fallback we also read a
-// local file (for single-host setups where the Pi IS the Frameflow server).
+// Two ways data can reach us:
+//   (1) Push: the Pi POSTs readings to /api/sensors/ingest (recommended when
+//       the Pi has no fixed IP; set FRAMEFLOW_SENSOR_TOKEN to a shared secret).
+//   (2) Pull: we fetch http://pi:8787/sensors (set FRAMEFLOW_SENSOR_URL).
+//   (3) Local file fallback /run/frameflow/sensors.json (single-host setup).
 const SENSOR_URL = process.env.FRAMEFLOW_SENSOR_URL || '';
 const SENSOR_FILE = process.env.FRAMEFLOW_SENSOR_FILE || '/run/frameflow/sensors.json';
+const SENSOR_TOKEN = process.env.FRAMEFLOW_SENSOR_TOKEN || '';
 const SENSOR_STALE_MS = 2 * 60 * 1000; // 2 minutes
-const SENSOR_CACHE_MS = 5 * 1000;       // avoid hammering the Pi
+const SENSOR_CACHE_MS = 5 * 1000;       // avoid hammering upstream
 let sensorCache = { at: 0, payload: null };
+let sensorPushed = null;                 // last payload received via POST
+let sensorPushedAt = 0;
 
 async function fetchSensorsFromUrl(url) {
   if (typeof fetch !== 'function') throw new Error('fetch unavailable (Node < 18)');
@@ -390,6 +395,32 @@ function readSensorsFromFile(cb) {
     try { cb(JSON.parse(raw)); } catch { cb(null); }
   });
 }
+
+// POST /api/sensors/ingest  — the Pi pushes here.
+// Body: { temperature, humidity, eco2, tvoc, aqi, updatedAt, error? }
+// Auth: header "X-Sensor-Token" must match FRAMEFLOW_SENSOR_TOKEN.
+app.post('/api/sensors/ingest', express.json({ limit: '8kb' }), (req, res) => {
+  if (!SENSOR_TOKEN) {
+    return res.status(503).json({ error: 'ingest disabled (set FRAMEFLOW_SENSOR_TOKEN)' });
+  }
+  const tok = req.get('X-Sensor-Token') || req.query.token || '';
+  if (tok !== SENSOR_TOKEN) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  const b = req.body || {};
+  sensorPushed = {
+    updatedAt: Number(b.updatedAt) || Date.now(),
+    temperature: b.temperature ?? null,
+    humidity: b.humidity ?? null,
+    eco2: b.eco2 ?? null,
+    tvoc: b.tvoc ?? null,
+    aqi: b.aqi || '—',
+    error: b.error || null,
+  };
+  sensorPushedAt = Date.now();
+  sensorCache = { at: 0, payload: null }; // invalidate GET cache
+  res.json({ ok: true });
+});
 
 app.get('/api/sensors', async (_req, res) => {
   const now = Date.now();
@@ -414,15 +445,22 @@ app.get('/api/sensors', async (_req, res) => {
     res.json(out);
   };
 
+  // 1) Prefer the most recently pushed payload.
+  if (sensorPushed && now - sensorPushedAt < SENSOR_STALE_MS) {
+    return respond(sensorPushed);
+  }
+
+  // 2) Fall back to pulling from a remote URL.
   if (SENSOR_URL) {
     try {
       const data = await fetchSensorsFromUrl(SENSOR_URL);
       return respond(data);
     } catch (err) {
       console.warn('[sensors] remote fetch failed:', err?.message || err);
-      // fall through to local file
     }
   }
+
+  // 3) Last resort: local file on the same host.
   readSensorsFromFile(respond);
 });
 
