@@ -1048,12 +1048,222 @@
   font-size: 1.1rem;
 }
 
-/* ========== RESPECT REDUCED MOTION ========== */
-@media (prefers-reduced-motion: reduce) {
-  .kal-shell *, .kal-shell *::before, .kal-shell *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 120ms !important;
-    scroll-behavior: auto !important;
-  }
+/* ========== BAROCKE ORNAMENTE / STUCK ========== */
+
+/* Filigran unter dem Haupttitel */
+.kal-title-flourish {
+  position: sticky;
+  top: calc(var(--kal-topbar-h) + var(--kal-safe-top) - 1px);
+  z-index: 49;
+  display: flex; justify-content: center;
+  padding: 0 0 2px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(13,9,16,0.92), rgba(13,9,16,0));
 }
+.kal-title-flourish svg {
+  color: var(--kal-accent);
+  opacity: 0.55;
+  filter: drop-shadow(0 0 6px var(--kal-accent-glow));
+}
+
+/* Geschwungene Flourish-Linien unter Panel-Überschriften */
+.kal-flourish {
+  display: flex; justify-content: center;
+  margin: -0.3rem 0 1.2rem;
+  pointer-events: none;
+}
+.kal-flourish svg {
+  color: var(--kal-accent);
+  opacity: 0.7;
+  filter: drop-shadow(0 0 4px var(--kal-accent-glow));
+  animation: kal-flourish-in 800ms cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes kal-flourish-in {
+  from { opacity: 0; transform: scaleX(0.4); }
+  to   { opacity: 0.7; transform: scaleX(1); }
+}
+
+/* Stuck-Oberfläche: Textur + Goldrahmen */
+.kal-surface.kal-stucco {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(232,180,184,0.05) 0, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(212,163,115,0.04) 0, transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(212,175,55,0.05) 0, transparent 60%),
+    linear-gradient(180deg, var(--kal-bg-card) 0%, var(--kal-bg-soft) 100%);
+  position: relative;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.5),
+    0 2px 0 rgba(255,255,255,0.04) inset,
+    0 0 0 1px rgba(232,180,184,0.08);
+}
+.kal-surface.kal-stucco::after {
+  content: ''; position: absolute;
+  inset: 6px;
+  border-radius: calc(var(--kal-radius-lg) - 8px);
+  border: 1px solid rgba(232,180,184,0.1);
+  pointer-events: none;
+}
+
+/* Art-Déco-Eckornamente */
+.kal-corner {
+  position: absolute;
+  width: 22px; height: 22px;
+  pointer-events: none;
+  z-index: 2;
+}
+.kal-corner::before,
+.kal-corner::after {
+  content: ''; position: absolute;
+  background: var(--kal-gradient);
+  box-shadow: 0 0 6px var(--kal-accent-glow);
+  border-radius: 2px;
+}
+.kal-corner::before { width: 14px; height: 1.5px; }
+.kal-corner::after  { width: 1.5px; height: 14px; }
+.kal-corner-tl { top: 10px; left: 10px; }
+.kal-corner-tl::before { top: 0; left: 0; }
+.kal-corner-tl::after  { top: 0; left: 0; }
+.kal-corner-tr { top: 10px; right: 10px; }
+.kal-corner-tr::before { top: 0; right: 0; }
+.kal-corner-tr::after  { top: 0; right: 0; }
+.kal-corner-bl { bottom: 10px; left: 10px; }
+.kal-corner-bl::before { bottom: 0; left: 0; }
+.kal-corner-bl::after  { bottom: 0; left: 0; }
+.kal-corner-br { bottom: 10px; right: 10px; }
+.kal-corner-br::before { bottom: 0; right: 0; }
+.kal-corner-br::after  { bottom: 0; right: 0; }
+
+/* Metallic-Sheen auf Surface */
+.kal-surface.kal-stucco > .kal-view-content::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 40%, rgba(232,180,184,0.06) 50%, transparent 60%);
+  pointer-events: none;
+  animation: kal-sheen 9s ease-in-out infinite;
+  z-index: 0;
+  border-radius: inherit;
+}
+@keyframes kal-sheen {
+  0%, 100% { transform: translateX(-40%); opacity: 0; }
+  50%      { transform: translateX(40%);  opacity: 1; }
+}
+
+/* Damast-Punktmuster Body-Overlay */
+.kal-shell::before {
+  content: ''; position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(232,180,184,0.04) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+  opacity: 0.5;
+}
+.kal-shell > * { position: relative; z-index: 1; }
+
+/* Primary: goldener Strahlenkranz beim Drücken */
+.kal-primary::before {
+  content: ''; position: absolute; inset: -3px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg,
+    transparent 0%, var(--kal-accent-glow) 20%,
+    transparent 40%, var(--kal-accent-glow) 60%,
+    transparent 80%, var(--kal-accent-glow) 100%);
+  opacity: 0;
+  transition: opacity 400ms ease;
+  z-index: -1;
+  filter: blur(8px);
+}
+.kal-primary:active::before { opacity: 0.75; animation: kal-spin 3s linear infinite; }
+@keyframes kal-spin { to { transform: rotate(360deg); } }
+
+/* Kategorie-Karten: Goldleiste links */
+.kal-category-list .cal-category-card { position: relative; }
+.kal-category-list .cal-category-card::before {
+  content: ''; position: absolute;
+  left: 0; top: 14%; bottom: 14%;
+  width: 2px; border-radius: 2px;
+  background: var(--kal-gradient);
+  opacity: 0.55;
+  box-shadow: 0 0 6px var(--kal-accent-glow);
+  transition: opacity 260ms ease, width 260ms ease;
+}
+.kal-category-list .cal-category-card:active::before { opacity: 1; width: 3px; }
+
+/* Kategorie-Icon metallic sheen */
+.kal-category-list .cal-category-icon { position: relative; overflow: hidden; }
+.kal-category-list .cal-category-icon::after {
+  content: ''; position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.28) 50%, transparent 70%);
+  animation: kal-icon-sheen 6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes kal-icon-sheen {
+  0%, 65%, 100% { left: -60%; opacity: 0; }
+  80% { left: 130%; opacity: 0.9; }
+}
+
+/* Switch-Track: schimmernde Innenlinie */
+.kal-switch-track::before {
+  content: ''; position: absolute; inset: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  pointer-events: none;
+}
+
+/* FAB: Juwel-Ring */
+.kal-fab::after {
+  content: ''; position: absolute; inset: 3px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255,255,255,0.35);
+  animation: kal-spin 14s linear infinite;
+  pointer-events: none;
+}
+
+/* Topbar: marmorierte Reflektion */
+.kal-topbar::before {
+  content: ''; position: absolute;
+  left: 10%; right: 10%; top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%, rgba(232,180,184,0.12) 30%,
+    rgba(212,175,55,0.2) 50%, rgba(232,180,184,0.12) 70%, transparent 100%);
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Sheet-Header: dekorativer Stern */
+.kal-sheet-head::before {
+  content: '❖';
+  position: absolute;
+  left: 50%; top: calc(100% - 2px);
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--kal-accent);
+  opacity: 0.55;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px var(--kal-accent-glow));
+}
+
+/* Panel-Heads: Goldunterstrich */
+.kal-panel-head h2 { position: relative; padding-bottom: 0.4rem; }
+.kal-panel-head h2::after,
+.kal-panel-head-title::after {
+  content: '';
+  display: block;
+  width: 80px; height: 2px;
+  margin: 0.4rem auto 0;
+  background: var(--kal-gradient);
+  border-radius: 2px;
+  opacity: 0.6;
+  box-shadow: 0 0 8px var(--kal-accent-glow);
+}
+.kal-panel-head h2::after { margin-left: 0; }
+
+/* Ornament-Stern */
+.kal-ornament {
+  color: var(--kal-accent);
+  filter: drop-shadow(0 0 8px var(--kal-accent-glow));
+}
+
+/* ========== RESPECT REDUCED MOTION ========== */
