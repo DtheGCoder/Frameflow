@@ -81,6 +81,7 @@
       </section>
 
       <div class="frame-meta">
+        <div class="frame-meta-weather-group">
         <div id="frameWeather" class="frame-weather hidden" aria-live="polite">
           <span class="frame-weather-icon" id="frameWeatherIcon"></span>
           <span class="frame-weather-body">
@@ -88,19 +89,39 @@
             <small id="frameWeatherLoc"></small>
           </span>
         </div>
-        <div id="frameSensors" class="frame-sensors hidden" aria-live="polite">
-          <span class="frame-sensor">
-            <svg class="frame-sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 0 0-3 3v8.2a4.5 4.5 0 1 0 6 0V6a3 3 0 0 0-3-3z"/><circle cx="12" cy="17" r="1.6" fill="currentColor" stroke="none"/><path d="M12 8v7"/></svg>
-            <span class="frame-sensor-body"><strong id="frameSensorTemp">--°</strong><small>Raum</small></span>
+        <div id="frameSensors" class="frame-sensors hidden" aria-live="polite" data-aqi="unknown">
+          <span class="frame-sensor frame-sensor--temp" title="Raumtemperatur">
+            <svg class="frame-sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a2.5 2.5 0 0 0-2.5 2.5v9.2a4.5 4.5 0 1 0 5 0V5.5A2.5 2.5 0 0 0 12 3z"/><circle cx="12" cy="17" r="1.6" fill="currentColor" stroke="none"/><line x1="12" y1="8" x2="12" y2="15"/></svg>
+            <strong id="frameSensorTemp">--°</strong>
           </span>
-          <span class="frame-sensor">
-            <svg class="frame-sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 5 6 8 6 12a6 6 0 1 1-12 0c0-4 3-7 6-12z"/><path d="M9 14a3 3 0 0 0 2 3" opacity="0.6"/></svg>
-            <span class="frame-sensor-body"><strong id="frameSensorHum">--%</strong><small>Luft</small></span>
+          <span class="frame-sensor frame-sensor--hum" title="Luftfeuchte">
+            <svg class="frame-sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3 5 6 8 6 12a6 6 0 1 1-12 0c0-4 3-7 6-12z"/><path d="M9 14.5a3 3 0 0 0 2 3" opacity="0.55"/></svg>
+            <strong id="frameSensorHum">--%</strong>
           </span>
-          <span class="frame-sensor">
-            <svg class="frame-sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h10a3 3 0 1 0-3-3"/><path d="M3 14h13a3 3 0 1 1-3 3"/><path d="M5 18h8"/></svg>
-            <span class="frame-sensor-body"><strong id="frameSensorAqi">--</strong><small id="frameSensorAqiLabel">Luftqualität</small></span>
+          <span class="frame-sensor frame-sensor--aqi" id="frameSensorAqiBox" title="Luftqualität">
+            <!-- FRISCH: leaf + sparkle -->
+            <svg class="frame-sensor-icon aqi-icon aqi-icon--fresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 4C11 4 5 8 5 15c0 3 2 5 5 5 7 0 10-6 10-15z" fill="currentColor" fill-opacity="0.18"/>
+              <path d="M5 20c3-6 7-10 14-14" />
+              <circle cx="17.5" cy="6" r="0.9" fill="currentColor" stroke="none"/>
+              <circle cx="14.5" cy="4.5" r="0.6" fill="currentColor" stroke="none"/>
+            </svg>
+            <!-- MÜFFELIG: wavy smell lines -->
+            <svg class="frame-sensor-icon aqi-icon aqi-icon--stale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+              <path d="M4 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0" opacity="0.75"/>
+              <path d="M4 19c2-2 4-2 6 0s4 2 6 0 4-2 6 0" opacity="0.5"/>
+            </svg>
+            <!-- GIFTIG: skull / warning -->
+            <svg class="frame-sensor-icon aqi-icon aqi-icon--toxic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3a7 7 0 0 0-7 7v2c0 2 1 3.5 3 4v2a1 1 0 0 0 1 1h1.5v-2h3V19H15a1 1 0 0 0 1-1v-2c2-.5 3-2 3-4v-2a7 7 0 0 0-7-7z" fill="currentColor" fill-opacity="0.15"/>
+              <circle cx="9" cy="11" r="1.4" fill="currentColor" stroke="none"/>
+              <circle cx="15" cy="11" r="1.4" fill="currentColor" stroke="none"/>
+              <path d="M11 14.5l1 1 1-1"/>
+            </svg>
+            <strong id="frameSensorAqiLabel">--</strong>
           </span>
+        </div>
         </div>
         <span id="frameCounter" class="frame-counter hidden"></span>
         <span id="frameClock" class="frame-clock hidden"></span>

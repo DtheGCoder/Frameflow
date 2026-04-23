@@ -1028,9 +1028,15 @@ function scheduleWeather() {
 const frameSensors = el('frameSensors');
 const frameSensorTemp = el('frameSensorTemp');
 const frameSensorHum = el('frameSensorHum');
-const frameSensorAqi = el('frameSensorAqi');
 const frameSensorAqiLabel = el('frameSensorAqiLabel');
 let sensorsTimer = null;
+
+function aqiState(eco2) {
+  if (eco2 == null) return { key: 'unknown', label: '—' };
+  if (eco2 < 800) return { key: 'fresh', label: 'frisch' };
+  if (eco2 < 1500) return { key: 'stale', label: 'müffelig' };
+  return { key: 'toxic', label: 'giftig' };
+}
 
 async function refreshSensors() {
   if (!frameSensors) return;
@@ -1047,8 +1053,9 @@ async function refreshSensors() {
     frameSensors.classList.toggle('is-stale', !!d.stale);
     if (frameSensorTemp) frameSensorTemp.textContent = d.temperature != null ? `${d.temperature.toFixed(1)}°` : '--°';
     if (frameSensorHum) frameSensorHum.textContent = d.humidity != null ? `${Math.round(d.humidity)}%` : '--%';
-    if (frameSensorAqi) frameSensorAqi.textContent = d.eco2 != null ? `${d.eco2}` : '--';
-    if (frameSensorAqiLabel) frameSensorAqiLabel.textContent = d.aqi && d.aqi !== '—' ? `CO₂ · ${d.aqi}` : 'Luftqualität';
+    const state = aqiState(d.eco2);
+    frameSensors.dataset.aqi = state.key;
+    if (frameSensorAqiLabel) frameSensorAqiLabel.textContent = state.label;
   } catch (err) {
     frameSensors.classList.add('hidden');
   }

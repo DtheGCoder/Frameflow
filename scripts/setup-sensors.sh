@@ -66,6 +66,8 @@ RestartSec=5
 Environment=FRAMEFLOW_SENSOR_FILE=/run/frameflow/sensors.json
 Environment=FRAMEFLOW_DHT_PIN=D4
 Environment=FRAMEFLOW_SENSOR_INTERVAL=10
+Environment=FRAMEFLOW_SENSOR_HTTP_PORT=8787
+Environment=FRAMEFLOW_SENSOR_HTTP_BIND=0.0.0.0
 
 [Install]
 WantedBy=multi-user.target
@@ -77,5 +79,6 @@ systemctl enable --now frameflow-sensors.service
 echo ""
 echo "✅ Sensor daemon running."
 echo "    Live data file:  /run/frameflow/sensors.json"
+echo "    HTTP endpoint:   http://<pi-ip>:8787/sensors"
 echo "    Status:          systemctl status frameflow-sensors"
 echo "    Logs:            journalctl -u frameflow-sensors -f"

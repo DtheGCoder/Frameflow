@@ -362,29 +362,68 @@ app.get('/api/calendar', (_req, res) => {
 });
 
 // Local sensors (DHT22 + CCS811) — see scripts/sensors.py.
-// The Python daemon writes /run/frameflow/sensors.json every 10s; we just
-// serve whatever is on disk so this stays dead-simple and failure-tolerant.
+// The Python daemon runs on a remote Raspberry Pi and publishes values over
+// HTTP (default http://<pi>:8787/sensors).  As a fallback we also read a
+// local file (for single-host setups where the Pi IS the Frameflow server).
+const SENSOR_URL = process.env.FRAMEFLOW_SENSOR_URL || '';
 const SENSOR_FILE = process.env.FRAMEFLOW_SENSOR_FILE || '/run/frameflow/sensors.json';
 const SENSOR_STALE_MS = 2 * 60 * 1000; // 2 minutes
-app.get('/api/sensors', (_req, res) => {
+const SENSOR_CACHE_MS = 5 * 1000;       // avoid hammering the Pi
+let sensorCache = { at: 0, payload: null };
+
+async function fetchSensorsFromUrl(url) {
+  if (typeof fetch !== 'function') throw new Error('fetch unavailable (Node < 18)');
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), 4000);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } finally {
+    clearTimeout(to);
+  }
+}
+
+function readSensorsFromFile(cb) {
   fs.readFile(SENSOR_FILE, 'utf8', (err, raw) => {
-    if (err) {
-      return res.json({ available: false, reason: 'no-sensor-file' });
+    if (err) return cb(null);
+    try { cb(JSON.parse(raw)); } catch { cb(null); }
+  });
+}
+
+app.get('/api/sensors', async (_req, res) => {
+  const now = Date.now();
+  if (sensorCache.payload && now - sensorCache.at < SENSOR_CACHE_MS) {
+    return res.json(sensorCache.payload);
+  }
+
+  const respond = (data) => {
+    if (!data) {
+      const out = { available: false, reason: 'no-sensor-source' };
+      sensorCache = { at: now, payload: out };
+      return res.json(out);
     }
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      return res.json({ available: false, reason: 'parse-error' });
-    }
-    const age = Date.now() - (Number(data.updatedAt) || 0);
-    res.json({
+    const age = now - (Number(data.updatedAt) || 0);
+    const out = {
       available: true,
       stale: age > SENSOR_STALE_MS,
       ageMs: age,
       ...data,
-    });
-  });
+    };
+    sensorCache = { at: now, payload: out };
+    res.json(out);
+  };
+
+  if (SENSOR_URL) {
+    try {
+      const data = await fetchSensorsFromUrl(SENSOR_URL);
+      return respond(data);
+    } catch (err) {
+      console.warn('[sensors] remote fetch failed:', err?.message || err);
+      // fall through to local file
+    }
+  }
+  readSensorsFromFile(respond);
 });
 
 // Weather proxy — avoids any CORS/DNS quirks on kiosk/Pi.

@@ -31,12 +31,19 @@ from __future__ import annotations
 import json
 import os
 import sys
+import threading
 import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 OUTPUT = Path(os.environ.get("FRAMEFLOW_SENSOR_FILE", "/run/frameflow/sensors.json"))
 DHT_PIN_NAME = os.environ.get("FRAMEFLOW_DHT_PIN", "D4")   # GPIO 4 (physical pin 7)
 POLL_INTERVAL = float(os.environ.get("FRAMEFLOW_SENSOR_INTERVAL", "10"))
+
+# Optional HTTP publisher so a remote Frameflow server can read the values.
+# Set FRAMEFLOW_SENSOR_HTTP_PORT=0 to disable.
+HTTP_PORT = int(os.environ.get("FRAMEFLOW_SENSOR_HTTP_PORT", "8787"))
+HTTP_BIND = os.environ.get("FRAMEFLOW_SENSOR_HTTP_BIND", "0.0.0.0")
 
 # ---------------------------------------------------------------------------
 # Lazy imports so the script still starts with a clear error if a library is
@@ -71,6 +78,57 @@ def write_json(payload: dict) -> None:
     tmp = OUTPUT.with_suffix(".tmp")
     tmp.write_text(json.dumps(payload), encoding="utf-8")
     tmp.replace(OUTPUT)
+
+
+# ---------------------------------------------------------------------------
+# Tiny HTTP publisher.  The remote Frameflow server polls  GET /sensors.
+# ---------------------------------------------------------------------------
+_state_lock = threading.Lock()
+_state: dict = {
+    "updatedAt": None,
+    "temperature": None,
+    "humidity": None,
+    "eco2": None,
+    "tvoc": None,
+    "aqi": "—",
+    "error": None,
+}
+
+
+class _Handler(BaseHTTPRequestHandler):
+    def do_GET(self):  # noqa: N802 (stdlib API)
+        if self.path.rstrip("/") not in ("", "/sensors", "/api/sensors"):
+            self.send_response(404)
+            self.end_headers()
+            return
+        with _state_lock:
+            payload = json.dumps(dict(_state)).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def log_message(self, fmt, *args):  # silence access log
+        return
+
+
+def start_http_server():
+    if HTTP_PORT <= 0:
+        return None
+    try:
+        srv = ThreadingHTTPServer((HTTP_BIND, HTTP_PORT), _Handler)
+    except OSError as exc:
+        sys.stderr.write(f"[frameflow-sensors] http server failed: {exc}\n")
+        return None
+    t = threading.Thread(target=srv.serve_forever, daemon=True, name="sensor-http")
+    t.start()
+    sys.stderr.write(
+        f"[frameflow-sensors] serving http://{HTTP_BIND}:{HTTP_PORT}/sensors\n"
+    )
+    return srv
 
 
 def main() -> int:
@@ -112,6 +170,8 @@ def main() -> int:
         "error": None,
     }
 
+    start_http_server()
+
     while True:
         entry = dict(last)
         entry["error"] = None
@@ -151,6 +211,9 @@ def main() -> int:
 
         entry["updatedAt"] = int(time.time() * 1000)
         last = entry
+        with _state_lock:
+            _state.clear()
+            _state.update(entry)
         try:
             write_json(entry)
         except Exception as exc:
