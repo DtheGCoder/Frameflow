@@ -75,10 +75,9 @@ Environment=FRAMEFLOW_DHT_PIN=D4
 Environment=FRAMEFLOW_SENSOR_INTERVAL=10
 Environment=FRAMEFLOW_SENSOR_HTTP_PORT=8787
 Environment=FRAMEFLOW_SENSOR_HTTP_BIND=0.0.0.0
-# Optional push to a remote Frameflow server (recommended when this Pi has no
-# fixed IP).  Override with:  sudo systemctl edit frameflow-sensors
-#Environment=FRAMEFLOW_PUSH_URL=https://your-server.example/api/sensors/ingest
-#Environment=FRAMEFLOW_PUSH_TOKEN=change-me-to-a-long-random-string
+# Push readings to the Frameflow web server (works without a fixed Pi IP).
+Environment=FRAMEFLOW_PUSH_URL=https://anonymchat.digital/api/sensors/ingest
+Environment=FRAMEFLOW_PUSH_TOKEN=3cf3b3582429bb6223e8d9b94351587f030ebc6f80c8a8dd05e6aad50da3af2b
 
 [Install]
 WantedBy=multi-user.target
