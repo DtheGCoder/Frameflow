@@ -11,8 +11,15 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-REPO_DIR="${REPO_DIR:-/opt/frameflow}"
+REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 SERVICE_USER="${SERVICE_USER:-frameflow}"
+
+if [[ ! -f "${REPO_DIR}/scripts/sensors.py" ]]; then
+  echo "ERROR: sensors.py not found in ${REPO_DIR}/scripts/" >&2
+  echo "Run this script from inside the repo: sudo bash scripts/setup-sensors.sh" >&2
+  exit 1
+fi
+echo "  → Using repo at: ${REPO_DIR}"
 
 # Fall back to root if the configured service user does not exist. The daemon
 # needs GPIO/I²C access anyway, so root is fine — and it keeps the installer
