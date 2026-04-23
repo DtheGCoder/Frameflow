@@ -349,6 +349,31 @@ app.get('/calendar', (_req, res) => {
   res.sendFile(path.join(ROOT_DIR, 'public', 'calendar.html'));
 });
 
+// Mobile-optimized calendar view for phones. Shares all logic (calendar.js)
+// with /calendar, just adds the `cal-mobile` body class and the phone-specific
+// stylesheet /static/kalender.css on top of the main CSS.
+app.get('/kalender', (_req, res) => {
+  try {
+    const fs = require('fs');
+    const src = fs.readFileSync(
+      path.join(ROOT_DIR, 'public', 'calendar.html'),
+      'utf8'
+    );
+    const html = src
+      .replace(
+        '<body class="cal-shell">',
+        '<body class="cal-shell cal-mobile">'
+      )
+      .replace(
+        '</head>',
+        '  <link rel="stylesheet" href="/static/kalender.css" />\n  </head>'
+      );
+    res.type('html').send(html);
+  } catch (e) {
+    res.sendFile(path.join(ROOT_DIR, 'public', 'calendar.html'));
+  }
+});
+
 app.get('/frame', (_req, res) => {
   res.sendFile(path.join(ROOT_DIR, 'public', 'frame.html'));
 });

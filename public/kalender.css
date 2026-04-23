@@ -1,0 +1,301 @@
+/* =============================================================
+   /kalender — mobile (smartphone) overrides for the calendar app.
+   Loaded on top of styles.css only for the /kalender route.
+   Body has extra class `cal-mobile`.
+   ============================================================= */
+
+/* Reset the glow orbs so they don't bleed into tap targets */
+.cal-mobile .cal-glow { pointer-events: none; }
+
+/* ---------- Top bar: stack vertically, full-width tabs ---------- */
+.cal-mobile .cal-topbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(8, 10, 16, 0.85);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.cal-mobile .cal-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.cal-mobile .cal-topbar-left h1 {
+  font-size: 1.3rem;
+  margin: 0;
+  line-height: 1.15;
+}
+.cal-mobile .cal-topbar-left .cal-eyebrow {
+  font-size: 0.7rem;
+  margin: 0;
+  opacity: 0.7;
+}
+.cal-mobile .cal-topbar-right {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.cal-mobile .cal-chip-link {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  border-radius: 999px;
+}
+
+/* Tabs: horizontal scroll, large touch targets */
+.cal-mobile .cal-topbar-tabs {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.2rem;
+  margin: 0 -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.cal-mobile .cal-topbar-tabs::-webkit-scrollbar { display: none; }
+.cal-mobile .cal-topbar-tabs button {
+  flex: 0 0 auto;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  min-height: 44px;
+}
+
+/* ---------- Main surface ---------- */
+.cal-mobile .cal-main {
+  padding: 0.8rem 0.8rem 5rem;
+  max-width: 100%;
+}
+.cal-mobile .cal-panel { padding: 0; }
+
+/* ---------- Control bar ---------- */
+.cal-mobile .cal-control-bar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  padding: 0.6rem 0;
+  position: sticky;
+  top: 0;
+  background: transparent;
+}
+.cal-mobile .cal-segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.25rem;
+  background: rgba(255,255,255,0.06);
+  padding: 0.3rem;
+  border-radius: 14px;
+}
+.cal-mobile .cal-segmented button {
+  min-height: 44px;
+  font-size: 0.95rem;
+}
+.cal-mobile .cal-nav-group {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+.cal-mobile .cal-nav-group button,
+.cal-mobile .cal-nav-group .cal-round-button,
+.cal-mobile .cal-nav-group .cal-pill-button {
+  min-height: 44px;
+  font-size: 1rem;
+}
+.cal-mobile .cal-round-button {
+  width: 44px;
+  height: 44px;
+  font-size: 1.3rem;
+}
+.cal-mobile .cal-pill-button {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+}
+
+/* "Neuer Termin" button -> full-width floating action button */
+.cal-mobile #openNewEvent {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 45;
+  padding: 0.9rem 1.3rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  box-shadow: 0 12px 36px rgba(245,158,11,0.4);
+  min-height: 52px;
+}
+
+/* ---------- Calendar surface ---------- */
+.cal-mobile .cal-surface {
+  padding: 0.6rem;
+  border-radius: 18px;
+  min-height: 60vh;
+}
+
+/* Day view: tighter hour grid, hour labels narrower */
+.cal-mobile .cal-day-grid {
+  --hour-height: 72px;
+  grid-template-columns: 3rem 1fr;
+  gap: 0.4rem;
+}
+.cal-mobile .cal-hour-labels span {
+  font-size: 0.7rem;
+}
+
+/* Week view: allow horizontal scroll */
+.cal-mobile .cal-week-grid,
+.cal-mobile .cal-week-head {
+  overflow-x: auto;
+  min-width: 100%;
+}
+.cal-mobile .cal-week-column {
+  min-width: 8rem;
+}
+
+/* Month view: smaller cells */
+.cal-mobile .cal-month-grid {
+  gap: 2px;
+  font-size: 0.8rem;
+}
+.cal-mobile .cal-month-cell {
+  min-height: 3.8rem;
+  padding: 0.25rem;
+  font-size: 0.8rem;
+}
+.cal-mobile .cal-month-cell .cal-month-date {
+  font-size: 0.85rem;
+}
+.cal-mobile .cal-month-cell .cal-month-event {
+  font-size: 0.65rem;
+  padding: 0.08rem 0.3rem;
+}
+
+/* ---------- Categories grid: 1 column on phones ---------- */
+.cal-mobile .cal-category-grid {
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+}
+.cal-mobile .cal-category-card {
+  padding: 0.9rem 1rem;
+  min-height: 64px;
+}
+
+/* ---------- Panel headings ---------- */
+.cal-mobile .cal-panel-head {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.8rem 0;
+}
+.cal-mobile .cal-panel-head h2 { font-size: 1.2rem; margin: 0; }
+.cal-mobile .cal-panel-head p  { font-size: 0.85rem; margin: 0.2rem 0 0; }
+.cal-mobile .cal-panel-head .cal-primary-button { width: 100%; }
+
+/* ---------- Dialogs: full-screen sheets on phones ---------- */
+.cal-mobile .cal-dialog {
+  width: 100%;
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+  padding: 0;
+}
+.cal-mobile .cal-dialog::backdrop { background: rgba(0,0,0,0.7); }
+.cal-mobile .cal-dialog-body {
+  padding: 1rem 1rem 6rem;
+  max-height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.cal-mobile .cal-dialog-body header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(8,10,16,0.95);
+  backdrop-filter: blur(12px);
+  padding: 0.7rem 0;
+  margin: -1rem -1rem 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.cal-mobile .cal-dialog-body header h3 { font-size: 1.15rem; }
+
+/* Dialog form fields: larger touch targets */
+.cal-mobile .cal-field input,
+.cal-mobile .cal-field textarea,
+.cal-mobile .cal-field select {
+  font-size: 1rem;
+  padding: 0.8rem 0.9rem;
+  min-height: 48px;
+  border-radius: 12px;
+}
+.cal-mobile .cal-field textarea { min-height: 80px; }
+.cal-mobile .cal-two-col { grid-template-columns: 1fr; gap: 0.6rem; }
+
+/* Category chips in dialog: wrap nicely */
+.cal-mobile .cal-category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.cal-mobile .cal-category-chip {
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+/* Dialog footer: stick bottom, buttons full-width stacked */
+.cal-mobile .cal-dialog-body footer {
+  position: sticky;
+  bottom: 0;
+  background: rgba(8,10,16,0.95);
+  backdrop-filter: blur(12px);
+  padding: 0.8rem 1rem calc(0.8rem + env(safe-area-inset-bottom));
+  margin: 1rem -1rem -6rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+.cal-mobile .cal-dialog-body footer button {
+  min-height: 50px;
+  width: 100%;
+  font-size: 1rem;
+  justify-content: center;
+}
+.cal-mobile .cal-dialog-body footer .cal-danger-button { order: 3; }
+.cal-mobile .cal-dialog-body footer .cal-ghost-button  { order: 2; }
+.cal-mobile .cal-dialog-body footer .cal-primary-button { order: 1; }
+
+/* Icon picker grid: 4 cols on phones */
+.cal-mobile .cal-icon-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+.cal-mobile .cal-icon-grid button {
+  aspect-ratio: 1;
+  min-height: 60px;
+}
+
+/* Settings form: full-width inputs */
+.cal-mobile .cal-settings-form {
+  gap: 0.9rem;
+  padding: 0.5rem 0;
+}
+.cal-mobile .cal-settings-form .cal-primary-button {
+  width: 100%;
+  min-height: 50px;
+}
+
+/* Hide the three decorative dots on the hamburger (if any) on phones */
+.cal-mobile .cal-icon-button {
+  width: 44px;
+  height: 44px;
+}
