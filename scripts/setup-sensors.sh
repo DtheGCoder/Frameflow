@@ -17,7 +17,13 @@ SERVICE_USER="${SERVICE_USER:-frameflow}"
 echo "[1/4] Installing OS packages…"
 apt-get update -y
 apt-get install -y --no-install-recommends \
-  python3 python3-pip python3-venv i2c-tools libgpiod2 python3-libgpiod
+  python3 python3-pip python3-venv i2c-tools
+
+# libgpiod was renamed across distros: libgpiod2 (<= Debian 12 / Ubuntu 22.04),
+# libgpiod3 (Debian 13 / Ubuntu 24.04+). Try each, ignore failures.
+for pkg in libgpiod2 libgpiod3 python3-libgpiod; do
+  apt-get install -y --no-install-recommends "$pkg" 2>/dev/null || true
+done
 
 echo "[2/4] Installing Python sensor libraries…"
 pip3 install --break-system-packages --upgrade \
