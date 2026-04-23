@@ -7,27 +7,45 @@
    ============================================================= */
 
 :root {
-  --kal-bg:       #0a0c12;
-  --kal-bg-soft:  #12151d;
-  --kal-bg-card:  #171a24;
-  --kal-border:   rgba(255,255,255,0.08);
-  --kal-border-strong: rgba(255,255,255,0.14);
-  --kal-text:     #f4f4f5;
-  --kal-text-dim: rgba(244,244,245,0.68);
-  --kal-text-mute:rgba(244,244,245,0.42);
-  --kal-accent:   #f59e0b;
-  --kal-accent-soft: rgba(245,158,11,0.15);
-  --kal-danger:   #ef4444;
+  /* ---------- Elegante Palette (warmes Midnight + Roségold + Champagner) ---------- */
+  --kal-bg:        #0d0910;
+  --kal-bg-soft:   #17101c;
+  --kal-bg-card:   #1d1524;
+  --kal-bg-velvet: radial-gradient(ellipse at top, #211729 0%, #0d0910 60%);
+  --kal-border:    rgba(232,180,184,0.12);
+  --kal-border-strong: rgba(232,180,184,0.22);
+  --kal-text:      #faf6f2;
+  --kal-text-dim:  rgba(250,246,242,0.72);
+  --kal-text-mute: rgba(250,246,242,0.46);
 
-  --kal-radius:   16px;
-  --kal-radius-lg:22px;
+  /* Roségold + Champagner */
+  --kal-rose:      #e8b4b8;
+  --kal-gold:      #d4af37;
+  --kal-champagne: #f5e6d3;
+  --kal-accent:    #d4a373;                   /* Hauptakzent */
+  --kal-accent-2:  #e8b4b8;                   /* sekundärer Schimmer */
+  --kal-accent-soft: rgba(212,163,115,0.16);
+  --kal-accent-glow: rgba(212,163,115,0.38);
+  --kal-gradient: linear-gradient(135deg, #e8b4b8 0%, #d4a373 50%, #d4af37 100%);
+  --kal-gradient-soft: linear-gradient(135deg, rgba(232,180,184,0.18), rgba(212,175,55,0.15));
+  --kal-danger:    #e06c75;
 
-  --kal-topbar-h: 56px;
-  --kal-viewbar-h:50px;
-  --kal-navbar-h: 52px;
-  --kal-bottom-h: 64px;
+  /* Schriften */
+  --kal-font-display: 'Cormorant Garamond', 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  --kal-font-body:    'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --kal-radius:   18px;
+  --kal-radius-lg:24px;
+
+  --kal-topbar-h: 62px;
+  --kal-viewbar-h:52px;
+  --kal-navbar-h: 54px;
+  --kal-bottom-h: 68px;
   --kal-safe-bottom: env(safe-area-inset-bottom, 0px);
   --kal-safe-top:    env(safe-area-inset-top, 0px);
+
+  --kal-shadow-soft: 0 4px 16px rgba(0,0,0,0.35);
+  --kal-shadow-lux:  0 10px 30px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.04) inset;
 }
 
 /* ---------- Reset ---------- */
@@ -36,9 +54,14 @@
   margin: 0;
   padding: 0;
   min-height: 100dvh;
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--kal-font-body);
   color: var(--kal-text);
   background: var(--kal-bg);
+  background-image:
+    radial-gradient(1200px 600px at 50% -10%, rgba(232,180,184,0.08), transparent 55%),
+    radial-gradient(900px 500px at 100% 100%, rgba(212,163,115,0.06), transparent 60%),
+    var(--kal-bg);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
@@ -50,66 +73,138 @@
   color: var(--kal-text);
   background: var(--kal-bg-soft);
   border: 1px solid var(--kal-border);
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  padding: 0.95rem 1.1rem;
   width: 100%;
   outline: none;
   -webkit-appearance: none;
   appearance: none;
+  transition: border-color 160ms, box-shadow 160ms, background 160ms;
 }
-.kal-shell input[type="color"] { padding: 0.2rem; height: 48px; }
-.kal-shell input:focus, .kal-shell textarea:focus {
+.kal-shell input[type="color"] { padding: 0.2rem; height: 52px; }
+.kal-shell input:focus, .kal-shell textarea:focus, .kal-shell select:focus {
   border-color: var(--kal-accent);
-  box-shadow: 0 0 0 3px var(--kal-accent-soft);
+  background: var(--kal-bg-card);
+  box-shadow: 0 0 0 4px var(--kal-accent-soft), 0 2px 12px rgba(0,0,0,0.3);
 }
 .kal-shell .hidden { display: none !important; }
+
+/* Dezenter Goldflimmer-Trenner */
+.kal-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--kal-border-strong) 20%, var(--kal-accent) 50%, var(--kal-border-strong) 80%, transparent 100%);
+  margin: 0.6rem 1.2rem;
+  opacity: 0.7;
+}
+.kal-ornament {
+  text-align: center; color: var(--kal-accent);
+  font-family: var(--kal-font-display); font-size: 1.3rem;
+  letter-spacing: 0.3em; margin: 0.3rem 0 0.6rem; opacity: 0.75;
+  user-select: none;
+}
+.kal-ornament::before, .kal-ornament::after {
+  content: ''; display: inline-block;
+  width: 28px; height: 1px; vertical-align: middle;
+  background: linear-gradient(90deg, transparent, var(--kal-accent));
+  margin: 0 0.6rem;
+}
+.kal-ornament::after { background: linear-gradient(90deg, var(--kal-accent), transparent); }
 
 /* ---------- Top bar ---------- */
 .kal-topbar {
   position: sticky; top: 0; z-index: 50;
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  grid-template-columns: 46px 1fr 46px;
   align-items: center;
   gap: 0.6rem;
   height: calc(var(--kal-topbar-h) + var(--kal-safe-top));
-  padding: var(--kal-safe-top) 0.8rem 0;
-  background: rgba(10,12,18,0.92);
-  backdrop-filter: blur(18px);
+  padding: var(--kal-safe-top) 0.9rem 0;
+  background: linear-gradient(180deg, rgba(13,9,16,0.96) 0%, rgba(13,9,16,0.78) 100%);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
   border-bottom: 1px solid var(--kal-border);
+  box-shadow: 0 8px 20px -10px rgba(0,0,0,0.6);
+}
+.kal-topbar::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kal-accent) 50%, transparent);
+  opacity: 0.55;
 }
 .kal-title {
-  margin: 0; font-size: 1.05rem; font-weight: 700;
-  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin: 0;
+  font-family: var(--kal-font-display);
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--kal-gradient);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
 }
 .kal-icon-btn {
-  width: 44px; height: 44px;
+  width: 46px; height: 46px;
   display: grid; place-items: center;
   border-radius: 999px; color: var(--kal-text);
-  transition: background 120ms;
+  transition: background 160ms, transform 120ms, color 160ms;
+  position: relative;
 }
-.kal-icon-btn:active { background: var(--kal-bg-soft); }
+.kal-icon-btn::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: inherit; padding: 1px;
+  background: linear-gradient(135deg, rgba(232,180,184,0.25), transparent 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0; transition: opacity 200ms;
+}
+.kal-icon-btn:active {
+  background: var(--kal-bg-soft);
+  transform: scale(0.94);
+  color: var(--kal-accent);
+}
+.kal-icon-btn:active::after { opacity: 1; }
 .kal-icon-btn svg { width: 22px; height: 22px; }
 
-/* ---------- View switcher ---------- */
+/* ---------- View switcher (Tag / Woche / Monat) ---------- */
 .kal-viewbar {
   position: sticky;
   top: calc(var(--kal-topbar-h) + var(--kal-safe-top));
   z-index: 40;
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem;
   height: var(--kal-viewbar-h);
-  padding: 0.45rem 0.8rem;
-  background: rgba(10,12,18,0.9);
-  backdrop-filter: blur(14px);
+  padding: 0.5rem 0.9rem;
+  background: rgba(13,9,16,0.88);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
 }
 .kal-viewbar button {
   border-radius: 999px;
-  font-size: 0.92rem; font-weight: 600;
+  font-family: var(--kal-font-body);
+  font-size: 0.95rem; font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--kal-text-dim); background: var(--kal-bg-soft);
-  transition: all 140ms;
+  border: 1px solid var(--kal-border);
+  transition: all 180ms cubic-bezier(0.16,1,0.3,1);
+  position: relative; overflow: hidden;
 }
 .kal-viewbar button.is-active {
-  background: var(--kal-accent); color: #1a1200;
-  box-shadow: 0 4px 14px rgba(245,158,11,0.35);
+  background: var(--kal-gradient);
+  color: #2a1a0a;
+  border-color: transparent;
+  box-shadow: 0 6px 18px var(--kal-accent-glow), inset 0 1px 0 rgba(255,255,255,0.35);
+  transform: translateY(-1px);
+}
+.kal-viewbar button.is-active::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: kal-shimmer 2.8s ease-in-out infinite;
+}
+@keyframes kal-shimmer {
+  0% { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
 }
 
 /* ---------- Prev / Today / Next ---------- */
@@ -117,38 +212,68 @@
   position: sticky;
   top: calc(var(--kal-topbar-h) + var(--kal-viewbar-h) + var(--kal-safe-top));
   z-index: 39;
-  display: grid; grid-template-columns: 48px 1fr 48px; gap: 0.5rem;
+  display: grid; grid-template-columns: 50px 1fr 50px; gap: 0.55rem;
   height: var(--kal-navbar-h);
-  padding: 0.4rem 0.8rem 0.55rem;
-  background: rgba(10,12,18,0.88);
-  backdrop-filter: blur(12px);
+  padding: 0.45rem 0.9rem 0.6rem;
+  background: rgba(13,9,16,0.86);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
   border-bottom: 1px solid var(--kal-border);
 }
 .kal-nav-btn {
-  width: 48px; height: 44px;
+  width: 50px; height: 44px;
   display: grid; place-items: center;
-  border-radius: 12px;
-  background: var(--kal-bg-soft); color: var(--kal-text);
+  border-radius: 14px;
+  background: var(--kal-bg-soft);
+  border: 1px solid var(--kal-border);
+  color: var(--kal-text);
+  transition: all 160ms;
 }
-.kal-nav-btn:active { background: var(--kal-bg-card); }
+.kal-nav-btn:active {
+  background: var(--kal-bg-card);
+  border-color: var(--kal-accent);
+  color: var(--kal-accent);
+  transform: scale(0.94);
+}
 .kal-nav-btn svg { width: 22px; height: 22px; }
 .kal-today-btn {
-  height: 44px; border-radius: 12px;
-  background: var(--kal-bg-soft);
+  height: 44px; border-radius: 14px;
+  background: var(--kal-gradient-soft);
+  border: 1px solid var(--kal-border-strong);
+  font-family: var(--kal-font-body);
   font-weight: 600; font-size: 0.95rem;
+  color: var(--kal-text);
+  letter-spacing: 0.04em;
+  transition: all 180ms;
 }
-.kal-today-btn:active { background: var(--kal-bg-card); }
+.kal-today-btn:active {
+  background: var(--kal-gradient);
+  color: #2a1a0a;
+  border-color: transparent;
+  transform: scale(0.97);
+}
 
 /* ---------- Main ---------- */
-.kal-main { padding-bottom: calc(var(--kal-bottom-h) + var(--kal-safe-bottom) + 1rem); }
-.kal-panel { display: none; padding: 0.8rem; }
-.kal-panel.is-active { display: block; }
+.kal-main { padding-bottom: calc(var(--kal-bottom-h) + var(--kal-safe-bottom) + 1.2rem); }
+.kal-panel { display: none; padding: 0.9rem; }
+.kal-panel.is-active { display: block; animation: kal-fade-in 300ms ease; }
+@keyframes kal-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .kal-surface {
-  background: var(--kal-bg-card);
+  background: linear-gradient(180deg, var(--kal-bg-card) 0%, var(--kal-bg-soft) 100%);
   border: 1px solid var(--kal-border);
   border-radius: var(--kal-radius-lg);
   overflow: hidden;
   padding: 0;
+  box-shadow: var(--kal-shadow-lux);
+  position: relative;
+}
+.kal-surface::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kal-accent-2) 30%, var(--kal-accent) 50%, var(--kal-accent-2) 70%, transparent);
+  opacity: 0.5; pointer-events: none;
 }
 .kal-view-content { position: relative; }
 
@@ -257,20 +382,28 @@
   overflow: hidden;
 }
 .kal-view-content .cal-week-head-cell small {
-  font-size: 0.6rem; color: var(--kal-text-dim);
-  font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em;
+  font-size: 0.58rem; color: var(--kal-text-mute);
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
   line-height: 1;
+  font-family: var(--kal-font-body);
 }
 .kal-view-content .cal-week-head-cell strong {
-  font-size: 0.92rem; color: var(--kal-text);
-  font-weight: 800; line-height: 1.1;
+  font-family: var(--kal-font-display);
+  font-size: 1.1rem; color: var(--kal-text);
+  font-weight: 600; line-height: 1.05;
 }
 .kal-view-content .cal-week-head-cell.is-today {
-  background: var(--kal-accent-soft);
+  background: var(--kal-gradient-soft);
+  border: 1px solid var(--kal-border-strong);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
 }
-.kal-view-content .cal-week-head-cell.is-today small,
+.kal-view-content .cal-week-head-cell.is-today small {
+  color: var(--kal-accent-2);
+}
 .kal-view-content .cal-week-head-cell.is-today strong {
-  color: var(--kal-accent);
+  background: var(--kal-gradient);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .kal-view-content .cal-week-body {
   display: grid;
@@ -332,37 +465,51 @@
 }
 .kal-view-content .cal-month-weekdays span,
 .kal-view-content .cal-month-weekday {
-  text-align: center; font-size: 0.66rem;
-  color: var(--kal-text-mute); padding: 0.3rem 0; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.04em;
+  text-align: center; font-size: 0.62rem;
+  color: var(--kal-accent-2); padding: 0.35rem 0; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  opacity: 0.85;
 }
 .kal-view-content .cal-month-grid {
   display: grid; grid-template-columns: repeat(7, 1fr);
   gap: 2px;
 }
 .kal-view-content .cal-month-cell {
-  background: var(--kal-bg-soft);
-  border-radius: 6px; padding: 3px;
+  background: linear-gradient(160deg, var(--kal-bg-soft), rgba(29,21,36,0.6));
+  border: 1px solid transparent;
+  border-radius: 10px; padding: 4px;
   font-size: 0.7rem; position: relative;
   display: flex; flex-direction: column; gap: 2px; overflow: hidden;
-  min-height: 56px;
+  min-height: 58px;
   aspect-ratio: 1;
+  transition: transform 140ms, box-shadow 140ms;
 }
-.kal-view-content .cal-month-cell.is-muted { opacity: 0.32; }
+.kal-view-content .cal-month-cell:active {
+  transform: scale(0.97);
+}
+.kal-view-content .cal-month-cell.is-muted { opacity: 0.3; }
 .kal-view-content .cal-month-cell.is-today {
-  background: var(--kal-accent-soft);
+  background: var(--kal-gradient-soft);
   border: 1px solid var(--kal-accent);
-  padding: 2px;
+  box-shadow: 0 4px 14px var(--kal-accent-glow), inset 0 1px 0 rgba(255,255,255,0.06);
+  padding: 3px;
 }
 .kal-view-content .cal-month-cell > header {
   display: flex; align-items: center; justify-content: flex-end;
   padding: 0;
 }
 .kal-view-content .cal-month-day-number {
-  font-size: 0.76rem; font-weight: 700; color: var(--kal-text);
+  font-family: var(--kal-font-display);
+  font-size: 0.98rem; font-weight: 600; color: var(--kal-text);
   line-height: 1;
+  letter-spacing: 0.01em;
 }
-.kal-view-content .cal-month-cell.is-today .cal-month-day-number { color: var(--kal-accent); }
+.kal-view-content .cal-month-cell.is-today .cal-month-day-number {
+  background: var(--kal-gradient);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
 .kal-view-content .cal-month-events {
   display: flex; flex-direction: column; gap: 1px;
   overflow: hidden; flex: 1;
@@ -384,10 +531,26 @@
 /* ========== CATEGORIES TAB ========== */
 .kal-panel-head {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 0.6rem; padding: 0.2rem 0 0.9rem;
+  gap: 0.6rem; padding: 0.2rem 0 1rem;
 }
-.kal-panel-head h2 { margin: 0; font-size: 1.2rem; font-weight: 700; }
-.kal-panel-head-title { margin: 0 0 0.9rem; font-size: 1.2rem; font-weight: 700; }
+.kal-panel-head h2 {
+  margin: 0;
+  font-family: var(--kal-font-display);
+  font-size: 1.7rem; font-weight: 600;
+  background: var(--kal-gradient);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.01em;
+}
+.kal-panel-head-title {
+  margin: 0 0 1rem;
+  font-family: var(--kal-font-display);
+  font-size: 1.7rem; font-weight: 600;
+  background: var(--kal-gradient);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+}
 .kal-category-list { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
 .kal-category-list .cal-category-card {
   background: var(--kal-bg-card); border: 1px solid var(--kal-border);
@@ -413,22 +576,32 @@
 .kal-settings { display: grid; gap: 1rem; }
 .kal-field { display: block; }
 .kal-field > span {
-  display: block; font-size: 0.8rem; font-weight: 600;
-  color: var(--kal-text-dim); margin-bottom: 0.4rem; padding-left: 0.2rem;
+  display: block; font-size: 0.78rem; font-weight: 600;
+  color: var(--kal-accent-2); margin-bottom: 0.45rem; padding-left: 0.25rem;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  opacity: 0.85;
+}
+.kal-field-hint {
+  display: block; font-size: 0.78rem; color: var(--kal-text-mute);
+  margin-top: 0.4rem; padding-left: 0.25rem;
+  font-style: italic;
 }
 
 /* ---------- Switches ---------- */
 .kal-switch {
   display: grid; grid-template-columns: auto 1fr auto;
-  align-items: center; gap: 0.8rem;
-  padding: 0.9rem 1rem;
-  background: var(--kal-bg-card);
+  align-items: center; gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(160deg, var(--kal-bg-card), var(--kal-bg-soft));
   border: 1px solid var(--kal-border);
   border-radius: var(--kal-radius);
-  min-height: 58px;
+  min-height: 62px;
   cursor: pointer;
   position: relative;
+  box-shadow: var(--kal-shadow-soft);
+  transition: border-color 180ms;
 }
+.kal-switch:has(input:checked) { border-color: var(--kal-border-strong); }
 .kal-switch-inset { background: var(--kal-bg-soft); }
 .kal-switch input {
   position: absolute; opacity: 0; pointer-events: none;
@@ -448,21 +621,42 @@
   background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   transition: transform 180ms;
 }
-.kal-switch input:checked ~ .kal-switch-track { background: var(--kal-accent); border-color: var(--kal-accent); }
+.kal-switch input:checked ~ .kal-switch-track {
+  background: var(--kal-gradient);
+  border-color: transparent;
+  box-shadow: 0 2px 12px var(--kal-accent-glow);
+}
 .kal-switch input:checked ~ .kal-switch-track .kal-switch-thumb { transform: translateX(22px); }
 .kal-switch-label { font-size: 0.95rem; font-weight: 500; grid-column: 1 / 3; order: 1; }
 
 /* ========== BUTTONS ========== */
 .kal-primary {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.7rem 1.1rem; border-radius: 12px;
-  background: var(--kal-accent); color: #1a1200;
-  font-weight: 700; font-size: 0.95rem; min-height: 44px;
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.75rem 1.3rem; border-radius: 14px;
+  background: var(--kal-gradient); color: #2a1a0a;
+  font-family: var(--kal-font-body);
+  font-weight: 700; font-size: 0.96rem;
+  letter-spacing: 0.02em;
+  min-height: 46px;
   justify-content: center;
+  box-shadow: 0 6px 20px var(--kal-accent-glow), inset 0 1px 0 rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: transform 140ms, box-shadow 180ms, filter 140ms;
+  position: relative; overflow: hidden;
 }
-.kal-primary:active { filter: brightness(0.92); }
+.kal-primary::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 650ms;
+}
+.kal-primary:active {
+  transform: scale(0.97);
+  filter: brightness(1.05);
+}
+.kal-primary:active::after { transform: translateX(100%); }
 .kal-primary svg { width: 18px; height: 18px; }
-.kal-primary-block { width: 100%; min-height: 52px; font-size: 1rem; }
+.kal-primary-block { width: 100%; min-height: 54px; font-size: 1.02rem; }
 .kal-danger {
   display: inline-flex; align-items: center; gap: 0.5rem;
   padding: 0.7rem 1.1rem; border-radius: 12px;
@@ -475,16 +669,33 @@
 
 /* ---------- FAB ---------- */
 .kal-fab {
-  position: fixed; right: 1rem;
-  bottom: calc(var(--kal-bottom-h) + var(--kal-safe-bottom) + 1rem);
-  width: 58px; height: 58px; border-radius: 50%;
-  background: var(--kal-accent); color: #1a1200;
+  position: fixed; right: 1.1rem;
+  bottom: calc(var(--kal-bottom-h) + var(--kal-safe-bottom) + 1.1rem);
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--kal-gradient); color: #2a1a0a;
   display: grid; place-items: center;
-  box-shadow: 0 10px 28px rgba(245,158,11,0.45), 0 2px 6px rgba(0,0,0,0.3);
-  z-index: 60; transition: transform 140ms;
+  box-shadow:
+    0 14px 32px var(--kal-accent-glow),
+    0 4px 10px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.25);
+  z-index: 60; transition: transform 160ms, box-shadow 200ms;
 }
-.kal-fab:active { transform: scale(0.93); }
-.kal-fab svg { width: 26px; height: 26px; }
+.kal-fab::before {
+  content: ''; position: absolute; inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--kal-accent-glow) 0%, transparent 70%);
+  z-index: -1;
+  animation: kal-pulse 2.8s ease-in-out infinite;
+}
+@keyframes kal-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.9;  transform: scale(1.08); }
+}
+.kal-fab:active {
+  transform: scale(0.92);
+}
+.kal-fab svg { width: 28px; height: 28px; }
 
 /* ---------- Bottom tab bar ---------- */
 .kal-bottombar {
@@ -493,20 +704,38 @@
   padding-bottom: var(--kal-safe-bottom);
   z-index: 55;
   display: grid; grid-template-columns: repeat(3, 1fr);
-  background: rgba(10,12,18,0.92);
-  backdrop-filter: blur(20px);
+  background: linear-gradient(180deg, rgba(13,9,16,0.82) 0%, rgba(13,9,16,0.96) 100%);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   border-top: 1px solid var(--kal-border);
+}
+.kal-bottombar::before {
+  content: ''; position: absolute; left: 10%; right: 10%; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kal-accent) 50%, transparent);
+  opacity: 0.5;
 }
 .kal-bottombar button {
   display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 3px;
+  align-items: center; justify-content: center; gap: 4px;
   color: var(--kal-text-mute);
-  font-size: 0.7rem; font-weight: 600;
-  transition: color 120ms;
+  font-family: var(--kal-font-body);
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: color 160ms, transform 120ms;
+  position: relative;
 }
-.kal-bottombar button svg { width: 22px; height: 22px; }
-.kal-bottombar button.is-active { color: var(--kal-accent); }
-.kal-bottombar button:active { background: rgba(255,255,255,0.03); }
+.kal-bottombar button svg { width: 24px; height: 24px; transition: transform 200ms; }
+.kal-bottombar button.is-active {
+  color: var(--kal-accent);
+}
+.kal-bottombar button.is-active svg { transform: translateY(-2px) scale(1.1); }
+.kal-bottombar button.is-active::before {
+  content: ''; position: absolute; top: 6px;
+  width: 28px; height: 3px; border-radius: 2px;
+  background: var(--kal-gradient);
+  box-shadow: 0 2px 8px var(--kal-accent-glow);
+}
+.kal-bottombar button:active { transform: scale(0.94); }
 
 /* ========== SHEETS ========== */
 .kal-sheet {
@@ -532,8 +761,14 @@
   border-bottom: 1px solid var(--kal-border);
 }
 .kal-sheet-head h3 {
-  margin: 0; font-size: 1.05rem; font-weight: 700;
+  margin: 0;
+  font-family: var(--kal-font-display);
+  font-size: 1.4rem; font-weight: 600;
+  letter-spacing: 0.01em;
   text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--kal-gradient);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .kal-sheet-close {
   width: 44px; height: 44px;

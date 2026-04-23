@@ -8,6 +8,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Kalender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="/static/styles.css" />
     <link rel="stylesheet" href="/static/kalender.css" />
   </head>
@@ -63,10 +66,12 @@
 
       <section id="settingsTab" class="kal-panel">
         <h2 class="kal-panel-head-title">Einstellungen</h2>
+        <div class="kal-ornament">&#10086;</div>
         <form id="calendarSettingsForm" class="kal-settings">
           <label class="kal-field">
             <span>Termine im Foto-Widget</span>
             <input name="photoWidgetMax" type="number" min="1" max="6" step="1" inputmode="numeric" />
+            <small class="kal-field-hint">Wie viele Termine sollen im Fotomodus angezeigt werden?</small>
           </label>
           <label class="kal-switch">
             <input name="showPhotoWidget" type="checkbox" />
@@ -118,11 +123,13 @@
           <input type="hidden" name="eventId" />
           <label class="kal-field">
             <span>Titel</span>
-            <input name="title" type="text" maxlength="120" placeholder="z. B. Zahnarzt" required autocomplete="off" />
+            <input name="title" type="text" maxlength="120" placeholder="z. B. Zahnarzt" required autocomplete="off" />
+            <small class="kal-field-hint">Kurz & knackig – das erscheint in der Übersicht.</small>
           </label>
           <label class="kal-field">
             <span>Notiz</span>
             <textarea name="notes" rows="3" maxlength="240" placeholder="Optional"></textarea>
+            <small class="kal-field-hint">Platz für Adresse, Telefonnummer oder Gedanken.</small>
           </label>
           <label class="kal-switch kal-switch-inset">
             <input name="allDay" type="checkbox" />
