@@ -249,6 +249,26 @@
     <!-- Dezente Widmung -->
     <div class="kal-dedication" aria-hidden="true" style="position:fixed;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:5;pointer-events:none;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:13px;letter-spacing:0.8px;color:rgba(212,163,115,0.55);text-shadow:0 1px 4px rgba(0,0,0,0.5);user-select:none;">Für Ronja</div>
 
+    <!-- Handy-optimierte Monatsansicht (inline Override) -->
+    <style>
+      .kal-view-content .cal-month-shell{padding:2px 0!important;width:100%!important;box-sizing:border-box!important}
+      .kal-view-content .cal-month-weekdays,
+      .kal-view-content .cal-month-grid{gap:3px!important;width:100%!important}
+      .kal-view-content .cal-month-weekdays span,
+      .kal-view-content .cal-month-weekday{font-size:0.6rem!important;padding:0.25rem 0!important}
+      .kal-view-content .cal-month-cell{aspect-ratio:auto!important;min-height:0!important;height:52px!important;padding:3px 4px!important;border-radius:8px!important}
+      .kal-view-content .cal-month-day-number{font-size:0.85rem!important}
+      .kal-view-content .cal-month-events{gap:1px!important}
+      .kal-view-content .cal-month-event{font-size:0.5rem!important;padding:0 3px!important;line-height:1.25!important}
+      @media (max-width:420px){
+        .kal-view-content .cal-month-cell{height:48px!important;padding:2px 3px!important}
+        .kal-view-content .cal-month-day-number{font-size:0.78rem!important}
+      }
+      @media (min-width:560px){
+        .kal-view-content .cal-month-cell{height:62px!important}
+      }
+    </style>
+
     <!-- ============ FAB (neuer Termin) ============ -->
     <button id="openNewEvent" class="kal-fab" type="button" aria-label="Neuer Termin">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
