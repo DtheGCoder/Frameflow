@@ -1359,159 +1359,314 @@
   pointer-events: none;
 }
 
-/* ========== MENÜ OVERLAY (Hamburger) ========== */
+/* ========== MENÜ OVERLAY (Dropdown aus Hamburger oben links) ========== */
 .kal-menu-overlay {
-  position: fixed; inset: 0;
-  z-index: 80;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 200 !important;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 220ms ease;
+  transition: opacity 240ms ease;
 }
 .kal-menu-overlay.is-open {
   pointer-events: auto;
   opacity: 1;
 }
-.kal-menu-scrim {
-  position: absolute; inset: 0;
+.kal-menu-overlay .kal-menu-scrim {
+  position: absolute !important;
+  inset: 0 !important;
   background:
-    radial-gradient(1200px 600px at 20% -10%, rgba(232,180,184,0.12), transparent 55%),
-    radial-gradient(900px 500px at 85% 110%, rgba(212,163,115,0.1), transparent 60%),
-    rgba(8,5,10,0.78);
+    radial-gradient(1200px 800px at 8% 0%, rgba(232,180,184,0.16), transparent 55%),
+    radial-gradient(900px 600px at 90% 100%, rgba(212,175,55,0.1), transparent 60%),
+    rgba(5,3,7,0.72) !important;
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
 }
-.kal-menu-panel {
-  position: absolute;
-  top: calc(var(--kal-safe-top) + 0.75rem);
-  left: 0.9rem; right: 0.9rem;
-  max-width: 420px; margin: 0 auto;
+
+.kal-menu-overlay .kal-menu-panel {
+  position: absolute !important;
+  top: calc(var(--kal-safe-top) + var(--kal-topbar-h) + 0.35rem) !important;
+  left: 0.75rem !important;
+  right: auto !important;
+  width: min(360px, calc(100vw - 1.5rem)) !important;
+  max-height: calc(100vh - var(--kal-safe-top) - var(--kal-topbar-h) - var(--kal-safe-bottom) - 1.5rem);
+  overflow: hidden;
+  margin: 0 !important;
   background:
-    linear-gradient(180deg, #1b1118 0%, #130a15 55%, #0c060d 100%);
-  border: 1px solid rgba(232,180,184,0.35);
-  border-radius: 20px;
-  padding: 1rem 0.9rem 1.1rem;
+    radial-gradient(500px 300px at 10% 0%, rgba(232,180,184,0.14), transparent 60%),
+    linear-gradient(180deg, #1e1320 0%, #130a15 55%, #0a060c 100%) !important;
+  border: 1.5px solid rgba(232,180,184,0.45) !important;
+  border-radius: 18px !important;
+  padding: 0 !important;
   box-shadow:
-    0 30px 60px rgba(0,0,0,0.6),
-    0 0 0 1px rgba(212,175,55,0.2) inset,
-    0 0 28px rgba(232,180,184,0.18);
-  transform: translateY(-14px) scale(0.97);
+    0 30px 70px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(212,175,55,0.22) inset,
+    0 0 32px rgba(232,180,184,0.22) !important;
+  transform: translateY(-16px) scale(0.94);
+  transform-origin: top left;
   opacity: 0;
-  transition: transform 260ms cubic-bezier(0.22, 1.2, 0.36, 1), opacity 220ms ease;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1.2, 0.36, 1),
+    opacity 240ms ease !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 .kal-menu-overlay.is-open .kal-menu-panel {
   transform: translateY(0) scale(1);
   opacity: 1;
 }
-.kal-menu-panel::before {
-  content: ''; position: absolute; inset: 6px;
-  border: 1px solid rgba(212,163,115,0.22);
-  border-radius: 16px;
-  pointer-events: none;
+
+/* kleiner Gold-Pfeil der auf den Hamburger zeigt */
+.kal-menu-overlay .kal-menu-arrow {
+  position: absolute !important;
+  top: -8px !important;
+  left: 22px !important;
+  width: 14px; height: 14px;
+  background:
+    linear-gradient(135deg, #1e1320 0%, #1e1320 49%, transparent 50%);
+  border-top: 1.5px solid rgba(232,180,184,0.45);
+  border-left: 1.5px solid rgba(232,180,184,0.45);
+  transform: rotate(45deg);
+  border-top-left-radius: 3px;
+  z-index: 2;
 }
-.kal-menu-panel::after {
-  content: ''; position: absolute; inset: -1px;
-  border-radius: 21px;
+
+/* goldener Innenrand */
+.kal-menu-overlay .kal-menu-panel::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 5px !important;
+  border: 1px solid rgba(212,163,115,0.28) !important;
+  border-radius: 14px !important;
+  pointer-events: none !important;
+  z-index: 0;
+}
+/* animierter Glanz-Rand aussen */
+.kal-menu-overlay .kal-menu-panel::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: -1.5px !important;
+  border-radius: 19.5px !important;
+  padding: 1.5px !important;
   background: linear-gradient(135deg,
-    rgba(232,180,184,0.45) 0%,
-    transparent 30%,
-    transparent 70%,
-    rgba(212,175,55,0.45) 100%);
+    rgba(232,180,184,0.6) 0%,
+    rgba(212,175,55,0.25) 25%,
+    transparent 50%,
+    rgba(212,175,55,0.25) 75%,
+    rgba(232,180,184,0.6) 100%) !important;
+  background-size: 220% 220% !important;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  padding: 1px;
-  pointer-events: none;
-  animation: kal-menu-border-pulse 6s ease-in-out infinite;
+    linear-gradient(#000 0 0) !important;
+  -webkit-mask-composite: xor !important;
+          mask-composite: exclude !important;
+  pointer-events: none !important;
+  animation: kal-menu-border-pulse 5s ease-in-out infinite !important;
+  z-index: 0;
 }
 @keyframes kal-menu-border-pulse {
-  0%,100% { opacity: 0.6; }
-  50%     { opacity: 1; }
+  0%,100% { background-position:   0% 50%; opacity: 0.75; }
+  50%     { background-position: 100% 50%; opacity: 1; }
 }
-.kal-menu-head {
-  display: flex; align-items: center; gap: 0.6rem;
-  padding: 0.2rem 0.4rem 0.75rem;
-  border-bottom: 1px solid rgba(212,163,115,0.22);
-  position: relative;
-}
-.kal-menu-head h2 {
-  flex: 1;
-  margin: 0;
-  font-family: var(--kal-font-display);
-  font-size: 1.35rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--kal-text);
-  text-align: left;
-}
-.kal-menu-crown {
-  color: var(--kal-accent);
-  filter: drop-shadow(0 0 6px rgba(232,180,184,0.55));
-  animation: kal-crown-shimmer 3.2s ease-in-out infinite;
-}
-.kal-menu-close {
-  width: 36px; height: 36px; border-radius: 50%;
-  display: grid; place-items: center;
-  color: var(--kal-text-mute);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(212,163,115,0.22);
-  transition: color 160ms, transform 120ms, background 160ms;
-}
-.kal-menu-close:active { transform: scale(0.92); background: rgba(232,180,184,0.12); color: var(--kal-text); }
-.kal-menu-close svg { width: 18px; height: 18px; }
 
-.kal-menu-list {
-  display: flex; flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.8rem 0.25rem 0.4rem;
+/* --- Kopfzeile --- */
+.kal-menu-overlay .kal-menu-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.6rem !important;
+  padding: 1rem 1rem 0.75rem !important;
+  position: relative !important;
+  z-index: 1;
 }
-.kal-menu-list button {
-  display: flex; align-items: center; gap: 0.85rem;
-  padding: 0.85rem 0.9rem;
-  border-radius: 14px;
-  color: var(--kal-text);
-  font-family: var(--kal-font-body);
-  font-size: 1rem; font-weight: 600;
-  letter-spacing: 0.02em;
+.kal-menu-overlay .kal-menu-crown {
+  color: #f4d0c6 !important;
+  filter: drop-shadow(0 0 6px rgba(232,180,184,0.7));
+  flex-shrink: 0 !important;
+  width: 32px !important;
+  height: 14px !important;
+}
+.kal-menu-overlay .kal-menu-title {
+  flex: 1 !important;
+  margin: 0 !important;
+  font-family: var(--kal-font-display) !important;
+  font-size: 1.4rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.1em !important;
+  text-align: left !important;
+  background: linear-gradient(90deg, #f4d0c6 0%, #e8b4b8 25%, #d4af37 50%, #e8b4b8 75%, #f4d0c6 100%) !important;
+  background-size: 220% 100% !important;
+  -webkit-background-clip: text !important;
+          background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  animation: kal-title-shimmer 4s linear infinite !important;
+}
+.kal-menu-overlay .kal-menu-close {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #f4d0c6 !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(212,163,115,0.32) !important;
+  flex-shrink: 0 !important;
+  transition: color 160ms, transform 180ms, background 160ms !important;
+  padding: 0 !important;
+}
+.kal-menu-overlay .kal-menu-close:active {
+  transform: rotate(90deg) scale(0.9) !important;
+  background: rgba(232,180,184,0.18) !important;
+}
+.kal-menu-overlay .kal-menu-close svg {
+  width: 16px !important;
+  height: 16px !important;
+  color: currentColor !important;
+}
+
+/* Zier-Trennlinie */
+.kal-menu-overlay .kal-menu-divider {
+  height: 1px !important;
+  margin: 0 1rem !important;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(232,180,184,0.5) 20%,
+    #d4af37 50%,
+    rgba(232,180,184,0.5) 80%,
+    transparent) !important;
+  opacity: 0.7 !important;
+  animation: kal-line-sweep 6s linear infinite !important;
+  background-size: 200% 100% !important;
+}
+
+/* --- Menüpunkte --- */
+.kal-menu-overlay .kal-menu-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.45rem !important;
+  padding: 0.9rem 0.75rem 0.5rem !important;
+  list-style: none !important;
+  margin: 0 !important;
+  position: relative !important;
+  z-index: 1;
+}
+.kal-menu-overlay .kal-menu-item {
+  display: grid !important;
+  grid-template-columns: 44px 1fr auto !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.7rem 0.85rem !important;
+  border-radius: 13px !important;
+  color: #faf6f2 !important;
+  font-family: var(--kal-font-body) !important;
+  text-align: left !important;
   background:
-    linear-gradient(180deg, rgba(232,180,184,0.05) 0%, rgba(212,163,115,0.03) 100%);
-  border: 1px solid rgba(212,163,115,0.22);
-  position: relative;
-  transition: background 180ms, transform 140ms, border-color 180ms;
-  text-align: left;
+    linear-gradient(180deg, rgba(232,180,184,0.04) 0%, rgba(212,163,115,0.02) 100%) !important;
+  border: 1px solid rgba(212,163,115,0.25) !important;
+  position: relative !important;
+  transition: background 200ms, border-color 200ms, transform 160ms !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
-.kal-menu-list button svg {
-  width: 22px; height: 22px;
-  color: var(--kal-accent);
-  flex-shrink: 0;
-  transition: transform 200ms, filter 200ms;
-}
-.kal-menu-list button span {
-  flex: 1;
-}
-.kal-menu-chev { opacity: 0.55; width: 18px !important; height: 18px !important; }
-.kal-menu-list button.is-active {
+.kal-menu-overlay .kal-menu-item-icon {
+  width: 44px !important;
+  height: 44px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 11px !important;
   background:
-    linear-gradient(180deg, rgba(232,180,184,0.18) 0%, rgba(212,163,115,0.1) 100%);
-  border-color: rgba(232,180,184,0.55);
+    radial-gradient(circle at 30% 30%, rgba(232,180,184,0.22), rgba(212,163,115,0.12)) !important;
+  border: 1px solid rgba(232,180,184,0.3) !important;
+  flex-shrink: 0 !important;
+  color: #f4d0c6 !important;
+  transition: transform 240ms cubic-bezier(0.22, 1.2, 0.36, 1), box-shadow 240ms !important;
+}
+.kal-menu-overlay .kal-menu-item-icon svg {
+  width: 22px !important;
+  height: 22px !important;
+  color: currentColor !important;
+  display: block !important;
+}
+.kal-menu-overlay .kal-menu-item-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+.kal-menu-overlay .kal-menu-item-title {
+  font-family: var(--kal-font-display) !important;
+  font-size: 1.08rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  color: #faf6f2 !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.kal-menu-overlay .kal-menu-item-sub {
+  font-size: 0.74rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  color: rgba(244,208,198,0.6) !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.kal-menu-overlay .kal-menu-item-chev {
+  width: 16px !important;
+  height: 16px !important;
+  color: rgba(244,208,198,0.5) !important;
+  flex-shrink: 0 !important;
+  transition: transform 240ms, color 240ms !important;
+}
+.kal-menu-overlay .kal-menu-item.is-active {
+  background:
+    linear-gradient(180deg, rgba(232,180,184,0.22) 0%, rgba(212,163,115,0.12) 100%) !important;
+  border-color: rgba(232,180,184,0.6) !important;
   box-shadow:
-    inset 0 1px 0 rgba(232,180,184,0.25),
-    0 6px 18px rgba(212,163,115,0.22);
+    inset 0 1px 0 rgba(232,180,184,0.3),
+    0 6px 18px rgba(212,163,115,0.28) !important;
 }
-.kal-menu-list button.is-active svg:first-child {
-  filter: drop-shadow(0 0 6px rgba(232,180,184,0.65));
+.kal-menu-overlay .kal-menu-item.is-active .kal-menu-item-icon {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(232,180,184,0.5), rgba(212,175,55,0.28)) !important;
+  border-color: rgba(244,208,198,0.7) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 4px 14px rgba(232,180,184,0.5) !important;
 }
-.kal-menu-list button:active { transform: scale(0.98); }
-.kal-menu-flourish {
-  display: flex; justify-content: center;
-  color: var(--kal-accent);
-  padding-top: 0.5rem;
-  opacity: 0.85;
+.kal-menu-overlay .kal-menu-item.is-active .kal-menu-item-chev {
+  color: #f4d0c6 !important;
+  transform: translateX(3px) !important;
 }
-.kal-menu-flourish svg { animation: kal-flourish-sway 5s ease-in-out infinite; }
+.kal-menu-overlay .kal-menu-item:active {
+  transform: scale(0.985) !important;
+}
+.kal-menu-overlay .kal-menu-item:hover .kal-menu-item-icon {
+  transform: rotate(-4deg) scale(1.04) !important;
+}
 
-body.kal-menu-open { overflow: hidden; }
+.kal-menu-overlay .kal-menu-flourish {
+  display: flex !important;
+  justify-content: center !important;
+  color: rgba(244,208,198,0.75) !important;
+  padding: 0.6rem 1rem 1rem !important;
+  opacity: 0.9 !important;
+  position: relative !important;
+  z-index: 1;
+}
+.kal-menu-overlay .kal-menu-flourish svg {
+  width: 100% !important;
+  max-width: 240px !important;
+  height: 14px !important;
+  animation: kal-flourish-sway 6s ease-in-out infinite !important;
+}
+
+body.kal-menu-open { overflow: hidden !important; }
 
 /* ========== AMBIENTE: dauerhaft laufende Animationen (ADHS-stimulierend) ========== */
 
