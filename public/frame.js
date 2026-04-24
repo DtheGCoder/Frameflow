@@ -569,10 +569,13 @@ function updateClock() {
 // ---------- state ----------
 
 function applyState(state) {
-  const prevSlides = currentState.slides;
-  const nextSlides = orderedSlides(state.slides || [], state.settings?.shuffle);
-  const slidesChanged = prevSlides.length !== nextSlides.length
-    || prevSlides.some((s, i) => !nextSlides[i] || s.id !== nextSlides[i].id || s.fileName !== nextSlides[i].fileName);
+  const prevIds = currentState.slides.map((s) => s && s.id).filter(Boolean).sort().join('|');
+  const incomingSlides = state.slides || [];
+  const nextIds = incomingSlides.map((s) => s && s.id).filter(Boolean).sort().join('|');
+  const slidesChanged = prevIds !== nextIds;
+  const nextSlides = slidesChanged
+    ? orderedSlides(incomingSlides, state.settings?.shuffle)
+    : currentState.slides;
   currentState = {
     slides: nextSlides,
     settings: { ...currentState.settings, ...(state.settings || {}) },
@@ -602,6 +605,19 @@ function hydrateSettingsForm() {
   document.documentElement.style.setProperty('--photo-ui-scale-clock', String(scaleC));
   document.documentElement.style.setProperty('--photo-ui-scale-sensors', String(scaleS));
   document.documentElement.style.setProperty('--photo-ui-scale-events', String(scaleE));
+  // Direkt als inline transform setzen, damit es auch ohne <style>-Block im HTML wirkt
+  const applyTransform = (selector, factor, origin) => {
+    document.querySelectorAll(selector).forEach((el) => {
+      el.style.transform = `scale(${factor})`;
+      el.style.transformOrigin = origin;
+      el.style.transition = 'transform 220ms ease';
+    });
+  };
+  applyTransform('.frame-weather, #weatherWidget, .weather-widget', scale * scaleW, 'top right');
+  applyTransform('.frame-clock', scale * scaleC, 'top left');
+  applyTransform('.frame-sensors', scale * scaleS, 'bottom left');
+  applyTransform('.photo-event-widget', scale * scaleE, 'bottom right');
+  applyTransform('.frame-copy', scale, 'bottom left');
 }
 
 // ---------- icon picker ----------
