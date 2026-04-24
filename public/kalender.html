@@ -257,6 +257,61 @@
     </button>
 
     <!-- ============ EVENT DIALOG ============ -->
+    <style>
+      /* Modernes, kompaktes Handy-Dialog-Styling - inline fuer garantiertes Laden */
+      dialog.kal-sheet{padding:0!important;border:0!important;background:transparent!important;max-width:none!important;max-height:none!important;width:100%!important;height:100%!important;margin:0!important;inset:0!important;color:#faf6f2!important;overflow:hidden!important}
+      dialog.kal-sheet::backdrop{background:rgba(8,5,12,0.65)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important}
+      dialog.kal-sheet[open]{display:flex!important;align-items:flex-end!important;justify-content:center!important}
+      @media (min-width:640px){dialog.kal-sheet[open]{align-items:center!important}}
+      dialog.kal-sheet .kal-sheet-body{width:100%!important;max-width:520px!important;max-height:92vh!important;background:linear-gradient(180deg,#1a1220 0%,#120a18 100%)!important;border:1px solid rgba(212,163,115,0.3)!important;border-radius:20px 20px 0 0!important;box-shadow:0 -12px 40px rgba(0,0,0,0.6)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;animation:kalSheetUp 220ms cubic-bezier(.2,.9,.3,1.1)!important;font-family:'Inter',system-ui,sans-serif!important}
+      @media (min-width:640px){dialog.kal-sheet .kal-sheet-body{border-radius:20px!important;margin:20px!important}}
+      @keyframes kalSheetUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+      dialog.kal-sheet .kal-sheet-head{display:grid!important;grid-template-columns:36px 1fr 36px!important;align-items:center!important;gap:8px!important;padding:14px 14px 10px!important;border-bottom:1px solid rgba(212,163,115,0.18)!important;background:linear-gradient(180deg,rgba(212,163,115,0.06),transparent)!important}
+      dialog.kal-sheet .kal-sheet-head h3{grid-column:2!important;margin:0!important;text-align:center!important;font-family:'Cormorant Garamond',serif!important;font-size:20px!important;font-weight:600!important;color:#faf6f2!important;letter-spacing:0.3px!important;line-height:1.1!important}
+      dialog.kal-sheet .kal-sheet-close{grid-column:1!important;width:36px!important;height:36px!important;padding:0!important;background:rgba(255,255,255,0.04)!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:10px!important;color:#faf6f2!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important}
+      dialog.kal-sheet .kal-sheet-close svg{width:16px!important;height:16px!important}
+      dialog.kal-sheet .kal-sheet-close:active{background:rgba(212,163,115,0.2)!important}
+      dialog.kal-sheet .kal-sheet-scroll{flex:1!important;overflow-y:auto!important;padding:14px!important;display:flex!important;flex-direction:column!important;gap:14px!important;-webkit-overflow-scrolling:touch!important}
+      dialog.kal-sheet .kal-field{display:flex!important;flex-direction:column!important;gap:6px!important;margin:0!important}
+      dialog.kal-sheet .kal-field>span{font-family:'Inter',sans-serif!important;font-size:11px!important;font-weight:600!important;text-transform:uppercase!important;letter-spacing:1.2px!important;color:rgba(212,163,115,0.85)!important;padding-left:2px!important}
+      dialog.kal-sheet .kal-field input[type="text"],
+      dialog.kal-sheet .kal-field input[type="datetime-local"],
+      dialog.kal-sheet .kal-field input[type="date"],
+      dialog.kal-sheet .kal-field input[type="time"],
+      dialog.kal-sheet .kal-field textarea{width:100%!important;box-sizing:border-box!important;padding:12px 14px!important;background:rgba(255,255,255,0.03)!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:12px!important;color:#faf6f2!important;font:500 16px/1.3 'Inter',sans-serif!important;transition:border-color 160ms ease,background 160ms ease!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important}
+      dialog.kal-sheet .kal-field textarea{resize:vertical!important;min-height:72px!important;font-family:'Inter',sans-serif!important}
+      dialog.kal-sheet .kal-field input::placeholder,
+      dialog.kal-sheet .kal-field textarea::placeholder{color:rgba(250,246,242,0.35)!important}
+      dialog.kal-sheet .kal-field input:focus,
+      dialog.kal-sheet .kal-field textarea:focus{border-color:rgba(212,175,55,0.5)!important;background:rgba(255,255,255,0.05)!important;box-shadow:0 0 0 3px rgba(212,163,115,0.12)!important}
+      dialog.kal-sheet .kal-field-hint{font-size:11px!important;color:rgba(250,246,242,0.4)!important;padding-left:2px!important;line-height:1.3!important}
+      dialog.kal-sheet .kal-time-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+      @media (max-width:380px){dialog.kal-sheet .kal-time-grid{grid-template-columns:1fr!important}}
+      dialog.kal-sheet .kal-switch{display:flex!important;align-items:center!important;gap:12px!important;padding:12px 14px!important;background:rgba(255,255,255,0.03)!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:12px!important;cursor:pointer!important;margin:0!important;position:relative!important}
+      dialog.kal-sheet .kal-switch input{position:absolute!important;opacity:0!important;pointer-events:none!important}
+      dialog.kal-sheet .kal-switch-label{flex:1!important;font-size:15px!important;font-weight:500!important;color:#faf6f2!important;order:1!important}
+      dialog.kal-sheet .kal-switch-track{position:relative!important;width:44px!important;height:26px!important;background:rgba(255,255,255,0.1)!important;border-radius:13px!important;transition:background 180ms ease!important;flex-shrink:0!important;order:2!important;border:1px solid rgba(255,255,255,0.08)!important}
+      dialog.kal-sheet .kal-switch-thumb{position:absolute!important;top:2px!important;left:2px!important;width:20px!important;height:20px!important;background:#faf6f2!important;border-radius:50%!important;transition:transform 180ms ease,background 180ms ease!important;box-shadow:0 2px 6px rgba(0,0,0,0.3)!important}
+      dialog.kal-sheet .kal-switch input:checked~.kal-switch-track{background:linear-gradient(135deg,#e8b4b8,#d4a373)!important;border-color:rgba(212,175,55,0.5)!important}
+      dialog.kal-sheet .kal-switch input:checked~.kal-switch-track .kal-switch-thumb{transform:translateX(18px)!important}
+      dialog.kal-sheet .kal-chips{display:flex!important;flex-wrap:wrap!important;gap:6px!important;padding:2px!important}
+      dialog.kal-sheet .kal-chips button,
+      dialog.kal-sheet .kal-chip{display:inline-flex!important;align-items:center!important;gap:6px!important;padding:8px 12px!important;background:rgba(255,255,255,0.04)!important;border:1px solid rgba(255,255,255,0.1)!important;border-radius:999px!important;color:#faf6f2!important;font:500 13px 'Inter',sans-serif!important;cursor:pointer!important;transition:all 160ms ease!important;white-space:nowrap!important}
+      dialog.kal-sheet .kal-chips button.is-active,
+      dialog.kal-sheet .kal-chip.is-active,
+      dialog.kal-sheet .kal-chips button[aria-pressed="true"]{background:linear-gradient(135deg,rgba(232,180,184,0.2),rgba(212,163,115,0.15))!important;border-color:rgba(212,175,55,0.55)!important;box-shadow:0 0 0 1px rgba(212,175,55,0.15) inset!important}
+      dialog.kal-sheet .kal-icon-picker{display:flex!important;align-items:center!important;gap:12px!important;width:100%!important;padding:12px 14px!important;background:rgba(255,255,255,0.03)!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:12px!important;color:#faf6f2!important;font:500 15px 'Inter',sans-serif!important;cursor:pointer!important;text-align:left!important}
+      dialog.kal-sheet .kal-icon-picker svg{width:16px!important;height:16px!important;color:rgba(250,246,242,0.4)!important;margin-left:auto!important}
+      dialog.kal-sheet .kal-icon-picker-preview{width:28px!important;height:28px!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:18px!important;background:rgba(212,163,115,0.1)!important;border-radius:8px!important;flex-shrink:0!important}
+      dialog.kal-sheet .kal-icon-picker-label{flex:1!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+      dialog.kal-sheet .kal-sheet-foot{display:flex!important;gap:10px!important;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px))!important;border-top:1px solid rgba(212,163,115,0.18)!important;background:linear-gradient(0deg,rgba(212,163,115,0.06),transparent)!important}
+      dialog.kal-sheet .kal-primary,
+      dialog.kal-sheet .kal-primary-block{flex:1!important;padding:14px 18px!important;background:linear-gradient(135deg,#e8b4b8 0%,#d4a373 50%,#d4af37 100%)!important;border:0!important;border-radius:12px!important;color:#1a1220!important;font:700 15px/1 'Inter',sans-serif!important;letter-spacing:0.3px!important;cursor:pointer!important;box-shadow:0 4px 16px rgba(212,163,115,0.3)!important;transition:transform 160ms ease,box-shadow 160ms ease!important}
+      dialog.kal-sheet .kal-primary:active{transform:scale(0.98)!important}
+      dialog.kal-sheet .kal-danger{display:inline-flex!important;align-items:center!important;gap:6px!important;padding:14px 16px!important;background:rgba(220,80,80,0.12)!important;border:1px solid rgba(220,80,80,0.3)!important;border-radius:12px!important;color:#ff9a9a!important;font:600 14px 'Inter',sans-serif!important;cursor:pointer!important}
+      dialog.kal-sheet .kal-danger svg{width:16px!important;height:16px!important}
+      dialog.kal-sheet .kal-danger.hidden{display:none!important}
+    </style>
     <dialog id="eventDialog" class="kal-sheet">
       <form id="eventForm" method="dialog" class="kal-sheet-body">
         <header class="kal-sheet-head">
