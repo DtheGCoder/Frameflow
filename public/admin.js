@@ -367,7 +367,9 @@ async function handleUploadSubmit(event) {
 
 async function handleSettingsSubmit(event) {
   event.preventDefault();
-  if (typeof window.__flushFrameUiScales === 'function') window.__flushFrameUiScales();
+  if (typeof window.__flushFrameUiScales === 'function') {
+    await window.__flushFrameUiScales();
+  }
   const f = elements.settingsForm;
   const payload = {
     frameName: f.frameName.value,
@@ -473,10 +475,15 @@ elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
       photoUiScaleEvents: cal.photoUiScaleEvents ?? 1,
       ...latestValues,
     };
-    fetch('/api/calendar/settings', {
+    // Merge sent values into local state so subsequent broadcasts don't reset us
+    return fetch('/api/calendar/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+    }).then(() => {
+      if (currentState && currentState.calendar && currentState.calendar.settings) {
+        Object.assign(currentState.calendar.settings, latestValues);
+      }
     }).catch(() => {});
   }
 
@@ -512,10 +519,9 @@ elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
 
   // Flush pending debounce synchronously (e.g. before Einstellungen speichern)
   window.__flushFrameUiScales = function () {
-    if (Object.keys(latestValues).length) {
-      clearTimeout(debounceTimer);
-      sendLive();
-    }
+    if (!Object.keys(latestValues).length) return Promise.resolve();
+    clearTimeout(debounceTimer);
+    return sendLive();
   };
 
   // Populate from state (but NEVER overwrite a slider the user touched in the last 1500ms)
