@@ -9,12 +9,18 @@
       /* UI-Skalierung im Foto-Modus (live einstellbar ueber /admin) */
       :root{--photo-ui-scale:1;--photo-ui-scale-weather:1;--photo-ui-scale-clock:1;--photo-ui-scale-sensors:1;--photo-ui-scale-events:1}
       .frame-stage[data-view="photo"] .photo-event-widget{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-events,1)));transform-origin:bottom right;transition:transform 220ms ease}
-      .frame-stage[data-view="photo"] .frame-sensors{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-sensors,1)));transform-origin:bottom left;transition:transform 220ms ease}
+      .frame-stage[data-view="photo"] .frame-sensors{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-sensors,1)));transform-origin:top center;transition:transform 220ms ease}
       .frame-stage[data-view="photo"] .weather-widget,
       .frame-stage[data-view="photo"] #weatherWidget,
-      .frame-stage[data-view="photo"] .frame-weather{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-weather,1)));transform-origin:top right;transition:transform 220ms ease}
+      .frame-stage[data-view="photo"] .frame-weather{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-weather,1)));transform-origin:top left;transition:transform 220ms ease}
       .frame-stage[data-view="photo"] .frame-copy{transform:scale(var(--photo-ui-scale,1));transform-origin:bottom left;transition:transform 220ms ease}
-      .frame-stage[data-view="photo"] .frame-clock{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-clock,1)));transform-origin:top left;transition:transform 220ms ease}
+      .frame-stage[data-view="photo"] .frame-clock{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-clock,1)));transform-origin:top right;transition:transform 220ms ease}
+      /* Neues 3-Spalten-Layout: Wetter links, Sensoren mittig, Uhr rechts */
+      .frame-shell .frame-meta{display:grid !important;grid-template-columns:1fr auto 1fr;align-items:start;justify-items:center;gap:1rem}
+      .frame-shell .frame-meta > #frameWeather{justify-self:start}
+      .frame-shell .frame-meta > #frameSensors{justify-self:center}
+      .frame-shell .frame-meta > #frameClock{justify-self:end}
+      #frameCounter{display:none !important}
     </style>
   </head>
   <body class="frame-shell">
@@ -92,7 +98,6 @@
       </section>
 
       <div class="frame-meta">
-        <div class="frame-meta-weather-group">
         <div id="frameWeather" class="frame-weather hidden" aria-live="polite">
           <span class="frame-weather-icon" id="frameWeatherIcon"></span>
           <span class="frame-weather-body">
@@ -133,8 +138,7 @@
             <strong id="frameSensorAqiLabel">--</strong>
           </span>
         </div>
-        </div>
-        <span id="frameCounter" class="frame-counter hidden"></span>
+        <span id="frameCounter" class="frame-counter hidden" hidden></span>
         <span id="frameClock" class="frame-clock hidden"></span>
       </div>
 

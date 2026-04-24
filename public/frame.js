@@ -613,9 +613,9 @@ function hydrateSettingsForm() {
       el.style.transition = 'transform 220ms ease';
     });
   };
-  applyTransform('.frame-weather, #weatherWidget, .weather-widget', scale * scaleW, 'top right');
-  applyTransform('.frame-clock', scale * scaleC, 'top left');
-  applyTransform('.frame-sensors', scale * scaleS, 'bottom left');
+  applyTransform('.frame-weather, #weatherWidget, .weather-widget', scale * scaleW, 'top left');
+  applyTransform('.frame-clock', scale * scaleC, 'top right');
+  applyTransform('.frame-sensors', scale * scaleS, 'top center');
   applyTransform('.photo-event-widget', scale * scaleE, 'bottom right');
   applyTransform('.frame-copy', scale, 'bottom left');
 }
