@@ -399,6 +399,9 @@ async function handleSettingsSubmit(event) {
 function hydrate(state) {
   currentState = state;
   populateSettings(state.settings);
+  if (typeof window.__populateFrameUiScales === 'function') {
+    window.__populateFrameUiScales(state.calendar && state.calendar.settings);
+  }
   updateStats(state);
   renderSlides(state.slides);
   syncRangeInputs(elements.uploadForm);
@@ -440,6 +443,62 @@ elements.editForm.addEventListener('change', refreshEditPreview);
 
 elements.uploadForm.addEventListener('submit', handleUploadSubmit);
 elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
+
+// ---------- Live Frame UI-Scales ----------
+(function initFrameUiScales() {
+  const sliders = document.querySelectorAll('[data-scale]');
+  if (!sliders.length) return;
+  const labels = {};
+  document.querySelectorAll('[data-scale-label]').forEach((el) => { labels[el.dataset.scaleLabel] = el; });
+  let debounceTimer = null;
+  let latestValues = {};
+
+  function updateLabel(key, val) {
+    if (labels[key]) labels[key].textContent = Math.round(val * 100) + '%';
+  }
+
+  function sendLive() {
+    const cal = (currentState && currentState.calendar && currentState.calendar.settings) || {};
+    const payload = {
+      photoWidgetMax: cal.photoWidgetMax ?? 3,
+      showPhotoWidget: cal.showPhotoWidget !== false,
+      swipeEnabled: cal.swipeEnabled !== false,
+      weekStartsOnMonday: cal.weekStartsOnMonday !== false,
+      photoUiScale: cal.photoUiScale ?? 1,
+      photoUiScaleWeather: cal.photoUiScaleWeather ?? 1,
+      photoUiScaleClock: cal.photoUiScaleClock ?? 1,
+      photoUiScaleSensors: cal.photoUiScaleSensors ?? 1,
+      photoUiScaleEvents: cal.photoUiScaleEvents ?? 1,
+      ...latestValues,
+    };
+    fetch('/api/calendar/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  }
+
+  sliders.forEach((slider) => {
+    slider.addEventListener('input', () => {
+      const key = slider.dataset.scale;
+      const val = Number(slider.value);
+      updateLabel(key, val);
+      latestValues[key] = val;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(sendLive, 120);
+    });
+  });
+
+  // Populate from state
+  window.__populateFrameUiScales = function (calSettings) {
+    sliders.forEach((slider) => {
+      const key = slider.dataset.scale;
+      const val = Number(calSettings?.[key] ?? 1) || 1;
+      if (document.activeElement !== slider) slider.value = val;
+      updateLabel(key, val);
+    });
+  };
+})();
 
 // init
 syncRangeInputs(elements.uploadForm);

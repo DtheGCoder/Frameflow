@@ -6,15 +6,15 @@
     <title>Frame</title>
     <link rel="stylesheet" href="/static/styles.css" />
     <style>
-      /* UI-Skalierung im Foto-Modus (einstellbar) */
-      :root{--photo-ui-scale:1}
-      .frame-stage[data-view="photo"] .photo-event-widget{transform:scale(var(--photo-ui-scale,1));transform-origin:bottom right}
-      .frame-stage[data-view="photo"] .frame-sensors{transform:scale(var(--photo-ui-scale,1));transform-origin:bottom left}
+      /* UI-Skalierung im Foto-Modus (live einstellbar ueber /admin) */
+      :root{--photo-ui-scale:1;--photo-ui-scale-weather:1;--photo-ui-scale-clock:1;--photo-ui-scale-sensors:1;--photo-ui-scale-events:1}
+      .frame-stage[data-view="photo"] .photo-event-widget{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-events,1)));transform-origin:bottom right;transition:transform 220ms ease}
+      .frame-stage[data-view="photo"] .frame-sensors{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-sensors,1)));transform-origin:bottom left;transition:transform 220ms ease}
       .frame-stage[data-view="photo"] .weather-widget,
       .frame-stage[data-view="photo"] #weatherWidget,
-      .frame-stage[data-view="photo"] .frame-weather{transform:scale(var(--photo-ui-scale,1));transform-origin:top right}
-      .frame-stage[data-view="photo"] .frame-copy{transform:scale(var(--photo-ui-scale,1));transform-origin:bottom left}
-      .frame-stage[data-view="photo"] .frame-clock{transform:scale(var(--photo-ui-scale,1));transform-origin:top left}
+      .frame-stage[data-view="photo"] .frame-weather{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-weather,1)));transform-origin:top right;transition:transform 220ms ease}
+      .frame-stage[data-view="photo"] .frame-copy{transform:scale(var(--photo-ui-scale,1));transform-origin:bottom left;transition:transform 220ms ease}
+      .frame-stage[data-view="photo"] .frame-clock{transform:scale(calc(var(--photo-ui-scale,1) * var(--photo-ui-scale-clock,1)));transform-origin:top left;transition:transform 220ms ease}
     </style>
   </head>
   <body class="frame-shell">

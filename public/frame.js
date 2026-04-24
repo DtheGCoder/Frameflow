@@ -590,6 +590,14 @@ function hydrateSettingsForm() {
   if (settingsForm.swipeEnabled) settingsForm.swipeEnabled.checked = Boolean(calSettings.swipeEnabled);
   const scale = Number(calSettings.photoUiScale) || 1;
   document.documentElement.style.setProperty('--photo-ui-scale', String(scale));
+  const scaleW = Number(calSettings.photoUiScaleWeather) || 1;
+  const scaleC = Number(calSettings.photoUiScaleClock) || 1;
+  const scaleS = Number(calSettings.photoUiScaleSensors) || 1;
+  const scaleE = Number(calSettings.photoUiScaleEvents) || 1;
+  document.documentElement.style.setProperty('--photo-ui-scale-weather', String(scaleW));
+  document.documentElement.style.setProperty('--photo-ui-scale-clock', String(scaleC));
+  document.documentElement.style.setProperty('--photo-ui-scale-sensors', String(scaleS));
+  document.documentElement.style.setProperty('--photo-ui-scale-events', String(scaleE));
 }
 
 // ---------- icon picker ----------

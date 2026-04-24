@@ -63,6 +63,10 @@ const defaultState = {
       swipeEnabled: true,
       weekStartsOnMonday: true,
       photoUiScale: 1,
+      photoUiScaleWeather: 1,
+      photoUiScaleClock: 1,
+      photoUiScaleSensors: 1,
+      photoUiScaleEvents: 1,
     },
     categories: DEFAULT_CATEGORIES,
     events: [],
@@ -657,6 +661,10 @@ app.put('/api/calendar/settings', (req, res) => {
       swipeEnabled: Boolean(req.body.swipeEnabled),
       weekStartsOnMonday: Boolean(req.body.weekStartsOnMonday),
       photoUiScale: sanitizeNumber(req.body.photoUiScale, appState.calendar.settings.photoUiScale ?? 1, 0.5, 2),
+      photoUiScaleWeather: sanitizeNumber(req.body.photoUiScaleWeather, appState.calendar.settings.photoUiScaleWeather ?? 1, 0.5, 2.5),
+      photoUiScaleClock: sanitizeNumber(req.body.photoUiScaleClock, appState.calendar.settings.photoUiScaleClock ?? 1, 0.5, 2.5),
+      photoUiScaleSensors: sanitizeNumber(req.body.photoUiScaleSensors, appState.calendar.settings.photoUiScaleSensors ?? 1, 0.5, 2.5),
+      photoUiScaleEvents: sanitizeNumber(req.body.photoUiScaleEvents, appState.calendar.settings.photoUiScaleEvents ?? 1, 0.5, 2.5),
     },
   };
 
