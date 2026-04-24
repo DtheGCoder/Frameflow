@@ -122,6 +122,12 @@ function hydrate(calendar) {
     elements.settingsForm.photoWidgetMax.value = calendar.settings.photoWidgetMax;
     elements.settingsForm.showPhotoWidget.checked = Boolean(calendar.settings.showPhotoWidget);
     elements.settingsForm.swipeEnabled.checked = Boolean(calendar.settings.swipeEnabled);
+    if (elements.settingsForm.photoUiScale) {
+      const scale = Number(calendar.settings.photoUiScale) || 1;
+      elements.settingsForm.photoUiScale.value = scale;
+      const label = document.getElementById('photoUiScaleVal');
+      if (label) label.textContent = Math.round(scale * 100) + '%';
+    }
   }
   renderCategories();
   renderCalendarView();
@@ -660,6 +666,7 @@ elements.settingsForm.addEventListener('submit', async (event) => {
       showPhotoWidget: form.showPhotoWidget.checked,
       swipeEnabled: form.swipeEnabled.checked,
       weekStartsOnMonday: true,
+      photoUiScale: form.photoUiScale ? Number(form.photoUiScale.value) : 1,
     }),
   });
   const next = await requestJson('/api/calendar');

@@ -588,6 +588,8 @@ function hydrateSettingsForm() {
   if (settingsForm.photoWidgetMax) settingsForm.photoWidgetMax.value = calSettings.photoWidgetMax ?? 3;
   if (settingsForm.showPhotoWidget) settingsForm.showPhotoWidget.checked = Boolean(calSettings.showPhotoWidget);
   if (settingsForm.swipeEnabled) settingsForm.swipeEnabled.checked = Boolean(calSettings.swipeEnabled);
+  const scale = Number(calSettings.photoUiScale) || 1;
+  document.documentElement.style.setProperty('--photo-ui-scale', String(scale));
 }
 
 // ---------- icon picker ----------

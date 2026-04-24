@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Frame</title>
     <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+      /* UI-Skalierung im Foto-Modus (einstellbar) */
+      :root{--photo-ui-scale:1}
+      .frame-stage[data-view="photo"] .photo-event-widget{transform:scale(var(--photo-ui-scale,1));transform-origin:bottom right}
+      .frame-stage[data-view="photo"] .frame-sensors{transform:scale(var(--photo-ui-scale,1));transform-origin:bottom left}
+      .frame-stage[data-view="photo"] .weather-widget,
+      .frame-stage[data-view="photo"] #weatherWidget,
+      .frame-stage[data-view="photo"] .frame-weather{transform:scale(var(--photo-ui-scale,1));transform-origin:top right}
+      .frame-stage[data-view="photo"] .frame-copy{transform:scale(var(--photo-ui-scale,1));transform-origin:bottom left}
+      .frame-stage[data-view="photo"] .frame-clock{transform:scale(var(--photo-ui-scale,1));transform-origin:top left}
+    </style>
   </head>
   <body class="frame-shell">
     <div id="frameBackground" class="frame-background aurora"></div>

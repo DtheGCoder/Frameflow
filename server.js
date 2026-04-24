@@ -62,6 +62,7 @@ const defaultState = {
       showPhotoWidget: true,
       swipeEnabled: true,
       weekStartsOnMonday: true,
+      photoUiScale: 1,
     },
     categories: DEFAULT_CATEGORIES,
     events: [],
@@ -655,6 +656,7 @@ app.put('/api/calendar/settings', (req, res) => {
       showPhotoWidget: Boolean(req.body.showPhotoWidget),
       swipeEnabled: Boolean(req.body.swipeEnabled),
       weekStartsOnMonday: Boolean(req.body.weekStartsOnMonday),
+      photoUiScale: sanitizeNumber(req.body.photoUiScale, appState.calendar.settings.photoUiScale ?? 1, 0.5, 2),
     },
   };
 
