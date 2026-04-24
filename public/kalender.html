@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" />
-    <link rel="stylesheet" href="/static/styles.css" />
-    <link rel="stylesheet" href="/static/kalender.css" />
+    <link rel="stylesheet" href="/static/styles.css?v=3" />
+    <link rel="stylesheet" href="/static/kalender.css?v=royal4" />
   </head>
   <body class="kal-shell">
 
@@ -186,7 +186,23 @@
       <span class="kal-sparkle kal-sparkle--7"></span>
       <span class="kal-sparkle kal-sparkle--8"></span>
       <span class="kal-sparkle kal-sparkle--9"></span>
+      <span class="kal-sparkle kal-sparkle--10"></span>
+      <span class="kal-sparkle kal-sparkle--11"></span>
+      <span class="kal-sparkle kal-sparkle--12"></span>
+      <span class="kal-sparkle kal-sparkle--13"></span>
+      <span class="kal-sparkle kal-sparkle--14"></span>
+      <span class="kal-sparkle kal-sparkle--15"></span>
+      <span class="kal-sparkle kal-sparkle--16"></span>
+      <span class="kal-sparkle kal-sparkle--17"></span>
+      <span class="kal-sparkle kal-sparkle--18"></span>
+      <span class="kal-star kal-star--1">✦</span>
+      <span class="kal-star kal-star--2">✧</span>
+      <span class="kal-star kal-star--3">✦</span>
+      <span class="kal-star kal-star--4">✧</span>
+      <span class="kal-star kal-star--5">✦</span>
     </div>
+    <!-- Aurora-Schimmer als vollflächiger Licht-Verlauf -->
+    <div class="kal-aurora" aria-hidden="true"></div>
 
     <!-- ============ FAB (neuer Termin) ============ -->
     <button id="openNewEvent" class="kal-fab" type="button" aria-label="Neuer Termin">
@@ -315,22 +331,28 @@
     </dialog>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/static/calendar-core.js"></script>
-    <script src="/static/calendar.js" defer></script>
+    <script src="/static/calendar-core.js?v=royal4"></script>
+    <script src="/static/calendar.js?v=royal4" defer></script>
     <script>
-      // Hamburger -> Menü-Overlay
+      // Hamburger -> Menü-Overlay (extra robust)
       (function () {
-        const overlay = document.getElementById('kalMenuOverlay');
-        const toggle  = document.getElementById('kalMenuToggle');
-        if (!overlay || !toggle) return;
-        const open  = () => { overlay.classList.add('is-open'); overlay.setAttribute('aria-hidden','false'); document.body.classList.add('kal-menu-open'); };
-        const close = () => { overlay.classList.remove('is-open'); overlay.setAttribute('aria-hidden','true'); document.body.classList.remove('kal-menu-open'); };
-        toggle.addEventListener('click', (e) => { e.preventDefault(); overlay.classList.contains('is-open') ? close() : open(); });
-        overlay.addEventListener('click', (e) => {
-          if (e.target.closest('[data-close-menu]')) { close(); return; }
-          if (e.target.closest('button[data-tab]')) { setTimeout(close, 220); }
-        });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) close(); });
+        function init() {
+          const overlay = document.getElementById('kalMenuOverlay');
+          const toggle  = document.getElementById('kalMenuToggle');
+          if (!overlay || !toggle) { console.warn('kal menu: elements missing'); return; }
+          const open  = () => { overlay.classList.add('is-open'); overlay.setAttribute('aria-hidden','false'); document.body.classList.add('kal-menu-open'); };
+          const close = () => { overlay.classList.remove('is-open'); overlay.setAttribute('aria-hidden','true'); document.body.classList.remove('kal-menu-open'); };
+          toggle.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); overlay.classList.contains('is-open') ? close() : open(); });
+          overlay.addEventListener('click', (e) => {
+            if (e.target.closest('[data-close-menu]')) { close(); return; }
+            if (e.target === overlay || e.target.classList.contains('kal-menu-scrim')) { close(); return; }
+            if (e.target.closest('button[data-tab]')) { setTimeout(close, 220); }
+          });
+          document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) close(); });
+          console.log('kal menu: ready');
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
       })();
     </script>
   </body>
