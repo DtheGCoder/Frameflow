@@ -451,7 +451,8 @@ elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
   const labels = {};
   document.querySelectorAll('[data-scale-label]').forEach((el) => { labels[el.dataset.scaleLabel] = el; });
   let debounceTimer = null;
-  let latestValues = {};
+  const latestValues = {};
+  const lastInteract = {}; // key -> timestamp
 
   function updateLabel(key, val) {
     if (labels[key]) labels[key].textContent = Math.round(val * 100) + '%';
@@ -478,23 +479,37 @@ elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
     }).catch(() => {});
   }
 
+  function markInteract(key) {
+    lastInteract[key] = Date.now();
+  }
+
   sliders.forEach((slider) => {
-    slider.addEventListener('input', () => {
-      const key = slider.dataset.scale;
+    const key = slider.dataset.scale;
+    const onChange = () => {
       const val = Number(slider.value);
       updateLabel(key, val);
       latestValues[key] = val;
+      markInteract(key);
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(sendLive, 120);
+    };
+    slider.addEventListener('input', onChange);
+    slider.addEventListener('change', onChange);
+    ['pointerdown','touchstart','mousedown'].forEach((ev) => {
+      slider.addEventListener(ev, () => markInteract(key), { passive: true });
     });
   });
 
-  // Populate from state
+  // Populate from state (but NEVER overwrite a slider the user touched in the last 1500ms)
   window.__populateFrameUiScales = function (calSettings) {
+    const now = Date.now();
     sliders.forEach((slider) => {
       const key = slider.dataset.scale;
-      const val = Number(calSettings?.[key] ?? 1) || 1;
-      if (document.activeElement !== slider) slider.value = val;
+      if (lastInteract[key] && now - lastInteract[key] < 1500) return; // still interacting
+      const serverVal = Number(calSettings?.[key]);
+      const val = Number.isFinite(serverVal) && serverVal > 0 ? serverVal : 1;
+      latestValues[key] = val;
+      slider.value = val;
       updateLabel(key, val);
     });
   };
