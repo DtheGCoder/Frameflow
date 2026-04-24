@@ -569,13 +569,17 @@ function updateClock() {
 // ---------- state ----------
 
 function applyState(state) {
+  const prevSlides = currentState.slides;
+  const nextSlides = orderedSlides(state.slides || [], state.settings?.shuffle);
+  const slidesChanged = prevSlides.length !== nextSlides.length
+    || prevSlides.some((s, i) => !nextSlides[i] || s.id !== nextSlides[i].id || s.fileName !== nextSlides[i].fileName);
   currentState = {
-    slides: orderedSlides(state.slides || [], state.settings?.shuffle),
+    slides: nextSlides,
     settings: { ...currentState.settings, ...(state.settings || {}) },
     calendar: { ...currentState.calendar, ...(state.calendar || {}) },
   };
   if (currentIndex >= currentState.slides.length) currentIndex = 0;
-  renderCurrentSlide(true);
+  if (slidesChanged) renderCurrentSlide(true);
   updateClock();
   renderCategoryList();
   hydrateSettingsForm();
