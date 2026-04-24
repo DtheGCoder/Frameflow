@@ -271,7 +271,8 @@
       dialog.kal-sheet .kal-sheet-close{grid-column:1!important;width:36px!important;height:36px!important;padding:0!important;background:rgba(255,255,255,0.04)!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:10px!important;color:#faf6f2!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important}
       dialog.kal-sheet .kal-sheet-close svg{width:16px!important;height:16px!important}
       dialog.kal-sheet .kal-sheet-close:active{background:rgba(212,163,115,0.2)!important}
-      dialog.kal-sheet .kal-sheet-scroll{flex:1!important;overflow-y:auto!important;padding:14px!important;display:flex!important;flex-direction:column!important;gap:14px!important;-webkit-overflow-scrolling:touch!important}
+      dialog.kal-sheet .kal-sheet-scroll{flex:1!important;overflow-y:auto!important;padding:14px!important;display:flex!important;flex-direction:column!important;gap:14px!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;-ms-overflow-style:none!important}
+      dialog.kal-sheet .kal-sheet-scroll::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
       dialog.kal-sheet .kal-field{display:flex!important;flex-direction:column!important;gap:6px!important;margin:0!important}
       dialog.kal-sheet .kal-field>span{font-family:'Inter',sans-serif!important;font-size:11px!important;font-weight:600!important;text-transform:uppercase!important;letter-spacing:1.2px!important;color:rgba(212,163,115,0.85)!important;padding-left:2px!important}
       dialog.kal-sheet .kal-field input[type="text"],
@@ -312,7 +313,7 @@
       dialog.kal-sheet .kal-danger svg{width:16px!important;height:16px!important}
       dialog.kal-sheet .kal-danger.hidden{display:none!important}
       /* Icon-Picker Inline-Styling */
-      dialog.kal-sheet .kal-search{display:flex!important;align-items:center!important;gap:10px!important;padding:10px 14px!important;background:rgba(255,255,255,0.03)!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:12px!important;margin:0!important;position:sticky!important;top:0!important;z-index:2!important}
+      dialog.kal-sheet .kal-search{display:flex!important;align-items:center!important;gap:10px!important;padding:10px 14px!important;background:rgba(26,18,32,0.75)!important;backdrop-filter:blur(14px) saturate(140%)!important;-webkit-backdrop-filter:blur(14px) saturate(140%)!important;border:1px solid rgba(212,163,115,0.25)!important;border-radius:12px!important;margin:-14px -14px 0!important;position:sticky!important;top:-14px!important;z-index:3!important;box-shadow:0 8px 20px -12px rgba(0,0,0,0.8)!important}
       dialog.kal-sheet .kal-search svg{width:18px!important;height:18px!important;color:rgba(212,163,115,0.7)!important;flex-shrink:0!important}
       dialog.kal-sheet .kal-search input{flex:1!important;background:transparent!important;border:0!important;outline:none!important;color:#faf6f2!important;font:500 16px/1.2 'Inter',sans-serif!important;padding:4px 0!important;min-width:0!important;width:100%!important;-webkit-appearance:none!important}
       dialog.kal-sheet .kal-search input::placeholder{color:rgba(250,246,242,0.4)!important}
