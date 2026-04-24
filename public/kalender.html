@@ -311,6 +311,20 @@
       dialog.kal-sheet .kal-danger{display:inline-flex!important;align-items:center!important;gap:6px!important;padding:14px 16px!important;background:rgba(220,80,80,0.12)!important;border:1px solid rgba(220,80,80,0.3)!important;border-radius:12px!important;color:#ff9a9a!important;font:600 14px 'Inter',sans-serif!important;cursor:pointer!important}
       dialog.kal-sheet .kal-danger svg{width:16px!important;height:16px!important}
       dialog.kal-sheet .kal-danger.hidden{display:none!important}
+      /* Icon-Picker Inline-Styling */
+      dialog.kal-sheet .kal-search{display:flex!important;align-items:center!important;gap:10px!important;padding:10px 14px!important;background:rgba(255,255,255,0.03)!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:12px!important;margin:0!important;position:sticky!important;top:0!important;z-index:2!important}
+      dialog.kal-sheet .kal-search svg{width:18px!important;height:18px!important;color:rgba(212,163,115,0.7)!important;flex-shrink:0!important}
+      dialog.kal-sheet .kal-search input{flex:1!important;background:transparent!important;border:0!important;outline:none!important;color:#faf6f2!important;font:500 16px/1.2 'Inter',sans-serif!important;padding:4px 0!important;min-width:0!important;width:100%!important;-webkit-appearance:none!important}
+      dialog.kal-sheet .kal-search input::placeholder{color:rgba(250,246,242,0.4)!important}
+      dialog.kal-sheet .kal-search:focus-within{border-color:rgba(212,175,55,0.5)!important;box-shadow:0 0 0 3px rgba(212,163,115,0.12)!important}
+      dialog.kal-sheet .kal-icon-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(56px,1fr))!important;gap:8px!important;padding:2px!important}
+      dialog.kal-sheet .kal-icon-grid button,
+      dialog.kal-sheet .kal-icon-grid .kal-icon-cell{aspect-ratio:1!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(255,255,255,0.03)!important;border:1px solid rgba(255,255,255,0.06)!important;border-radius:12px!important;color:#faf6f2!important;font-size:26px!important;line-height:1!important;cursor:pointer!important;transition:all 140ms ease!important;padding:0!important;overflow:hidden!important}
+      dialog.kal-sheet .kal-icon-grid button svg,
+      dialog.kal-sheet .kal-icon-grid .kal-icon-cell svg{width:24px!important;height:24px!important}
+      dialog.kal-sheet .kal-icon-grid button:active{transform:scale(0.94)!important}
+      dialog.kal-sheet .kal-icon-grid button.is-active,
+      dialog.kal-sheet .kal-icon-grid button[aria-pressed="true"]{background:linear-gradient(135deg,rgba(232,180,184,0.2),rgba(212,163,115,0.15))!important;border-color:rgba(212,175,55,0.55)!important;box-shadow:0 0 0 1px rgba(212,175,55,0.2) inset,0 0 12px rgba(212,163,115,0.25)!important}
     </style>
     <dialog id="eventDialog" class="kal-sheet">
       <form id="eventForm" method="dialog" class="kal-sheet-body">
