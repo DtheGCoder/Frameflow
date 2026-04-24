@@ -357,8 +357,24 @@
           const overlay = document.getElementById('kalMenuOverlay');
           const toggle  = document.getElementById('kalMenuToggle');
           if (!overlay || !toggle) { console.warn('kal menu: elements missing'); return; }
-          const open  = () => { overlay.classList.add('is-open'); overlay.setAttribute('aria-hidden','false'); document.body.classList.add('kal-menu-open'); };
-          const close = () => { overlay.classList.remove('is-open'); overlay.setAttribute('aria-hidden','true'); document.body.classList.remove('kal-menu-open'); };
+          const open  = () => {
+            overlay.classList.add('is-open');
+            overlay.setAttribute('aria-hidden','false');
+            document.body.classList.add('kal-menu-open');
+            overlay.style.opacity = '1';
+            overlay.style.visibility = 'visible';
+            overlay.style.pointerEvents = 'auto';
+            overlay.style.transition = 'opacity 240ms ease';
+          };
+          const close = () => {
+            overlay.classList.remove('is-open');
+            overlay.setAttribute('aria-hidden','true');
+            document.body.classList.remove('kal-menu-open');
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.transition = 'opacity 240ms ease, visibility 0s linear 240ms';
+            setTimeout(() => { if (!overlay.classList.contains('is-open')) overlay.style.visibility = 'hidden'; }, 250);
+          };
           toggle.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); overlay.classList.contains('is-open') ? close() : open(); });
           overlay.addEventListener('click', (e) => {
             if (e.target.closest('[data-close-menu]')) { close(); return; }
