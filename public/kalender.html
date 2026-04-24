@@ -121,9 +121,9 @@
             <small class="kal-field-hint">Wie viele Termine sollen im Fotomodus angezeigt werden?</small>
           </label>
           <label class="kal-field">
-            <span>UI-Größe im Foto-Modus <em id="photoUiScaleVal" style="font-style:normal;color:#d4a373;font-weight:600;margin-left:6px">100%</em></span>
+            <span>Frame-UI-Größe (Fotomodus) <em id="photoUiScaleVal" style="font-style:normal;color:#d4a373;font-weight:600;margin-left:6px">100%</em></span>
             <input name="photoUiScale" type="range" min="0.6" max="1.6" step="0.05" style="accent-color:#d4a373;width:100%;margin-top:4px" oninput="document.getElementById('photoUiScaleVal').textContent=Math.round(this.value*100)+'%'" />
-            <small class="kal-field-hint">Skaliert Termin-Widget, Wetter &amp; Sensoren im Foto-Modus.</small>
+            <small class="kal-field-hint">Steuert die Größe von Termin-Widget, Wetter, Sensoren &amp; Uhr auf der /frame-Seite.</small>
           </label>
           <label class="kal-switch">
             <input name="showPhotoWidget" type="checkbox" />
