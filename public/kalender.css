@@ -255,7 +255,7 @@
 }
 
 /* ---------- Main ---------- */
-.kal-main { padding-bottom: calc(var(--kal-bottom-h) + var(--kal-safe-bottom) + 1.2rem); }
+.kal-main { padding-bottom: calc(var(--kal-safe-bottom) + 1.2rem); }
 .kal-panel { display: none; padding: 0.9rem; }
 .kal-panel.is-active { display: block; animation: kal-fade-in 300ms ease; }
 @keyframes kal-fade-in {
@@ -694,7 +694,7 @@
 /* ---------- FAB ---------- */
 .kal-fab {
   position: fixed; right: 1.1rem;
-  bottom: calc(var(--kal-bottom-h) + var(--kal-safe-bottom) + 1.1rem);
+  bottom: calc(var(--kal-safe-bottom) + 1.1rem);
   width: 64px; height: 64px; border-radius: 50%;
   background: var(--kal-gradient); color: #2a1a0a;
   display: grid; place-items: center;
@@ -721,89 +721,8 @@
 }
 .kal-fab svg { width: 28px; height: 28px; }
 
-/* ---------- Bottom tab bar ---------- */
-.kal-bottombar {
-  position: fixed; left: 0; right: 0; bottom: 0;
-  height: calc(var(--kal-bottom-h) + var(--kal-safe-bottom));
-  padding: 0.5rem 0.5rem calc(var(--kal-safe-bottom) + 0.45rem);
-  z-index: 55;
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  background:
-    linear-gradient(180deg, #1a0f1c 0%, #120a14 55%, #0a060c 100%);
-  background-color: #120a14;
-  border-top: 2px solid var(--kal-accent);
-  box-shadow:
-    0 -1px 0 rgba(232,180,184,0.35) inset,
-    0 -10px 28px rgba(0,0,0,0.55),
-    0 -2px 0 rgba(212,175,55,0.25);
-}
-.kal-bottombar::before {
-  content: ''; position: absolute; left: 0; right: 0; top: -2px; height: 2px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(232,180,184,0.6) 12%,
-    #d4af37 30%,
-    #e8b4b8 50%,
-    #d4af37 70%,
-    rgba(232,180,184,0.6) 88%,
-    transparent 100%);
-  pointer-events: none;
-}
-.kal-bottombar::after {
-  content: ''; position: absolute; left: 0; right: 0; top: 4px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212,163,115,0.35) 50%, transparent);
-  pointer-events: none;
-}
-.kal-bottombar button {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 5px;
-  padding: 0.45rem 0.25rem 0.35rem;
-  margin: 0 2px;
-  color: var(--kal-text-mute);
-  font-family: var(--kal-font-body);
-  font-size: 0.72rem; font-weight: 600;
-  letter-spacing: 0.04em;
-  transition: color 160ms, transform 120ms, background 160ms;
-  position: relative;
-  min-height: 0;
-  border-radius: 12px;
-  background:
-    linear-gradient(180deg, rgba(232,180,184,0.04) 0%, rgba(212,163,115,0.02) 100%);
-  border: 1px solid rgba(212,163,115,0.12);
-}
-.kal-bottombar button + button {
-  border-left-color: rgba(212,163,115,0.12);
-}
-.kal-bottombar button svg {
-  width: 24px; height: 24px;
-  flex-shrink: 0;
-  transition: transform 200ms, filter 200ms;
-}
-.kal-bottombar button span {
-  line-height: 1.1;
-  white-space: nowrap;
-}
-.kal-bottombar button.is-active {
-  color: #faf6f2;
-  background:
-    linear-gradient(180deg, rgba(232,180,184,0.18) 0%, rgba(212,163,115,0.08) 100%);
-  border-color: rgba(232,180,184,0.45);
-  box-shadow:
-    inset 0 1px 0 rgba(232,180,184,0.25),
-    0 4px 14px rgba(212,163,115,0.22);
-}
-.kal-bottombar button.is-active svg {
-  transform: translateY(-1px) scale(1.1);
-  filter: drop-shadow(0 0 6px rgba(232,180,184,0.55));
-}
-.kal-bottombar button.is-active::before {
-  content: ''; position: absolute; top: -2px; left: 50%;
-  transform: translateX(-50%);
-  width: 32px; height: 3px; border-radius: 0 0 3px 3px;
-  background: var(--kal-gradient);
-  box-shadow: 0 2px 10px var(--kal-accent-glow);
-}
-.kal-bottombar button:active { transform: scale(0.94); }
+/* Bottombar entfernt - Menü ist jetzt im Hamburger-Overlay */
+.kal-bottombar { display: none !important; }
 
 /* ========== SHEETS ========== */
 .kal-sheet {
@@ -1098,7 +1017,7 @@
 .kal-side-rail {
   position: fixed;
   top: calc(var(--kal-topbar-h) + var(--kal-viewbar-h) + var(--kal-navbar-h) + var(--kal-safe-top) + 12px);
-  bottom: calc(var(--kal-bottom-h) + var(--kal-safe-bottom) + 12px);
+  bottom: calc(var(--kal-safe-bottom) + 12px);
   width: 14px;
   z-index: 2;
   pointer-events: none;
@@ -1440,4 +1359,322 @@
   pointer-events: none;
 }
 
+/* ========== MENÜ OVERLAY (Hamburger) ========== */
+.kal-menu-overlay {
+  position: fixed; inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+.kal-menu-overlay.is-open {
+  pointer-events: auto;
+  opacity: 1;
+}
+.kal-menu-scrim {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(232,180,184,0.12), transparent 55%),
+    radial-gradient(900px 500px at 85% 110%, rgba(212,163,115,0.1), transparent 60%),
+    rgba(8,5,10,0.78);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+.kal-menu-panel {
+  position: absolute;
+  top: calc(var(--kal-safe-top) + 0.75rem);
+  left: 0.9rem; right: 0.9rem;
+  max-width: 420px; margin: 0 auto;
+  background:
+    linear-gradient(180deg, #1b1118 0%, #130a15 55%, #0c060d 100%);
+  border: 1px solid rgba(232,180,184,0.35);
+  border-radius: 20px;
+  padding: 1rem 0.9rem 1.1rem;
+  box-shadow:
+    0 30px 60px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(212,175,55,0.2) inset,
+    0 0 28px rgba(232,180,184,0.18);
+  transform: translateY(-14px) scale(0.97);
+  opacity: 0;
+  transition: transform 260ms cubic-bezier(0.22, 1.2, 0.36, 1), opacity 220ms ease;
+}
+.kal-menu-overlay.is-open .kal-menu-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.kal-menu-panel::before {
+  content: ''; position: absolute; inset: 6px;
+  border: 1px solid rgba(212,163,115,0.22);
+  border-radius: 16px;
+  pointer-events: none;
+}
+.kal-menu-panel::after {
+  content: ''; position: absolute; inset: -1px;
+  border-radius: 21px;
+  background: linear-gradient(135deg,
+    rgba(232,180,184,0.45) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(212,175,55,0.45) 100%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  padding: 1px;
+  pointer-events: none;
+  animation: kal-menu-border-pulse 6s ease-in-out infinite;
+}
+@keyframes kal-menu-border-pulse {
+  0%,100% { opacity: 0.6; }
+  50%     { opacity: 1; }
+}
+.kal-menu-head {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.2rem 0.4rem 0.75rem;
+  border-bottom: 1px solid rgba(212,163,115,0.22);
+  position: relative;
+}
+.kal-menu-head h2 {
+  flex: 1;
+  margin: 0;
+  font-family: var(--kal-font-display);
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--kal-text);
+  text-align: left;
+}
+.kal-menu-crown {
+  color: var(--kal-accent);
+  filter: drop-shadow(0 0 6px rgba(232,180,184,0.55));
+  animation: kal-crown-shimmer 3.2s ease-in-out infinite;
+}
+.kal-menu-close {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center;
+  color: var(--kal-text-mute);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,163,115,0.22);
+  transition: color 160ms, transform 120ms, background 160ms;
+}
+.kal-menu-close:active { transform: scale(0.92); background: rgba(232,180,184,0.12); color: var(--kal-text); }
+.kal-menu-close svg { width: 18px; height: 18px; }
+
+.kal-menu-list {
+  display: flex; flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.8rem 0.25rem 0.4rem;
+}
+.kal-menu-list button {
+  display: flex; align-items: center; gap: 0.85rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 14px;
+  color: var(--kal-text);
+  font-family: var(--kal-font-body);
+  font-size: 1rem; font-weight: 600;
+  letter-spacing: 0.02em;
+  background:
+    linear-gradient(180deg, rgba(232,180,184,0.05) 0%, rgba(212,163,115,0.03) 100%);
+  border: 1px solid rgba(212,163,115,0.22);
+  position: relative;
+  transition: background 180ms, transform 140ms, border-color 180ms;
+  text-align: left;
+}
+.kal-menu-list button svg {
+  width: 22px; height: 22px;
+  color: var(--kal-accent);
+  flex-shrink: 0;
+  transition: transform 200ms, filter 200ms;
+}
+.kal-menu-list button span {
+  flex: 1;
+}
+.kal-menu-chev { opacity: 0.55; width: 18px !important; height: 18px !important; }
+.kal-menu-list button.is-active {
+  background:
+    linear-gradient(180deg, rgba(232,180,184,0.18) 0%, rgba(212,163,115,0.1) 100%);
+  border-color: rgba(232,180,184,0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(232,180,184,0.25),
+    0 6px 18px rgba(212,163,115,0.22);
+}
+.kal-menu-list button.is-active svg:first-child {
+  filter: drop-shadow(0 0 6px rgba(232,180,184,0.65));
+}
+.kal-menu-list button:active { transform: scale(0.98); }
+.kal-menu-flourish {
+  display: flex; justify-content: center;
+  color: var(--kal-accent);
+  padding-top: 0.5rem;
+  opacity: 0.85;
+}
+.kal-menu-flourish svg { animation: kal-flourish-sway 5s ease-in-out infinite; }
+
+body.kal-menu-open { overflow: hidden; }
+
+/* ========== AMBIENTE: dauerhaft laufende Animationen (ADHS-stimulierend) ========== */
+
+/* Schwebende goldene Juwelen, die über den ganzen Bildschirm driften */
+.kal-sparkle-layer {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.kal-sparkle {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff4dc, #e8b4b8 40%, #d4af37 80%);
+  box-shadow:
+    0 0 8px rgba(232,180,184,0.8),
+    0 0 18px rgba(212,175,55,0.5);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.kal-sparkle--1 { left:  8%; top: 24%; animation: kal-float-a 11s ease-in-out infinite;      animation-delay: -0.5s; }
+.kal-sparkle--2 { left: 22%; top: 62%; animation: kal-float-b 13s ease-in-out infinite;      animation-delay: -3s; }
+.kal-sparkle--3 { left: 38%; top: 18%; animation: kal-float-a  9s ease-in-out infinite;      animation-delay: -5s; }
+.kal-sparkle--4 { left: 52%; top: 78%; animation: kal-float-c 14s ease-in-out infinite;      animation-delay: -1.5s; }
+.kal-sparkle--5 { left: 66%; top: 34%; animation: kal-float-b 12s ease-in-out infinite;      animation-delay: -6s; }
+.kal-sparkle--6 { left: 80%; top: 58%; animation: kal-float-a 10s ease-in-out infinite;      animation-delay: -2s; }
+.kal-sparkle--7 { left: 14%; top: 82%; animation: kal-float-c 15s ease-in-out infinite;      animation-delay: -7s; }
+.kal-sparkle--8 { left: 72%; top: 12%; animation: kal-float-b  8s ease-in-out infinite;      animation-delay: -4s; }
+.kal-sparkle--9 { left: 90%; top: 80%; animation: kal-float-a 16s ease-in-out infinite;      animation-delay: -9s; }
+.kal-sparkle--2, .kal-sparkle--5, .kal-sparkle--8 { width: 4px; height: 4px; }
+.kal-sparkle--3, .kal-sparkle--7 { width: 8px; height: 8px; }
+
+@keyframes kal-float-a {
+  0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  15%  { opacity: 0.9; }
+  50%  { transform: translate(30px, -40px) scale(1.1); opacity: 1; }
+  85%  { opacity: 0.7; }
+  100% { transform: translate(-20px, -90px) scale(0.5); opacity: 0; }
+}
+@keyframes kal-float-b {
+  0%   { transform: translate(0, 0) scale(0.7); opacity: 0; }
+  20%  { opacity: 1; }
+  50%  { transform: translate(-40px, 30px) scale(1.2); opacity: 0.95; }
+  80%  { opacity: 0.6; }
+  100% { transform: translate(40px, 70px) scale(0.5); opacity: 0; }
+}
+@keyframes kal-float-c {
+  0%   { transform: translate(0, 0) scale(0.5) rotate(0deg); opacity: 0; }
+  18%  { opacity: 0.85; }
+  50%  { transform: translate(-25px, -55px) scale(1) rotate(180deg); opacity: 1; }
+  82%  { opacity: 0.5; }
+  100% { transform: translate(35px, -110px) scale(0.4) rotate(360deg); opacity: 0; }
+}
+
+/* Kartusche: Ranken schwingen leicht */
+.kal-cartouche svg {
+  animation: kal-cartouche-sway 7s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes kal-cartouche-sway {
+  0%,100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px rgba(232,180,184,0.35)); }
+  50%     { transform: translateY(-1.5px) scale(1.005); filter: drop-shadow(0 0 10px rgba(232,180,184,0.7)); }
+}
+
+/* Seitliche Goldschienen: pulsierend */
+.kal-side-rail {
+  animation: kal-rail-glow 4.5s ease-in-out infinite;
+}
+.kal-side-rail-right { animation-delay: -2.25s; }
+@keyframes kal-rail-glow {
+  0%,100% { opacity: 0.55; filter: drop-shadow(0 0 4px rgba(232,180,184,0.3)); }
+  50%     { opacity: 1;    filter: drop-shadow(0 0 14px rgba(232,180,184,0.75)); }
+}
+
+/* FAB: sanftes Atmen */
+.kal-fab {
+  animation: kal-fab-breathe 3.6s ease-in-out infinite;
+}
+@keyframes kal-fab-breathe {
+  0%,100% {
+    box-shadow:
+      0 14px 32px var(--kal-accent-glow),
+      0 4px 10px rgba(0,0,0,0.45),
+      inset 0 1px 0 rgba(255,255,255,0.4),
+      0 0 0 0 rgba(232,180,184,0.5);
+  }
+  50% {
+    box-shadow:
+      0 14px 32px var(--kal-accent-glow),
+      0 4px 10px rgba(0,0,0,0.45),
+      inset 0 1px 0 rgba(255,255,255,0.4),
+      0 0 0 14px rgba(232,180,184,0);
+  }
+}
+
+/* Ecken-Ornamente: zwinkern nacheinander */
+.kal-corner-tl { animation: kal-corner-twinkle 5s ease-in-out infinite;             animation-delay: -0s; }
+.kal-corner-tr { animation: kal-corner-twinkle 5s ease-in-out infinite;             animation-delay: -1.25s; }
+.kal-corner-br { animation: kal-corner-twinkle 5s ease-in-out infinite;             animation-delay: -2.5s; }
+.kal-corner-bl { animation: kal-corner-twinkle 5s ease-in-out infinite;             animation-delay: -3.75s; }
+@keyframes kal-corner-twinkle {
+  0%,100% { opacity: 0.55; filter: drop-shadow(0 0 2px rgba(232,180,184,0.3)); }
+  50%     { opacity: 1;    filter: drop-shadow(0 0 10px rgba(232,180,184,0.85)); }
+}
+
+/* Flourishes in Panels: sanftes Schwingen */
+.kal-flourish svg { animation: kal-flourish-sway 6s ease-in-out infinite; }
+@keyframes kal-flourish-sway {
+  0%,100% { transform: translateX(0) scale(1); filter: drop-shadow(0 0 3px rgba(232,180,184,0.35)); }
+  50%     { transform: translateX(3px) scale(1.02); filter: drop-shadow(0 0 10px rgba(232,180,184,0.65)); }
+}
+
+/* Krone über dem Titel: Schimmer + zartes Wippen */
+.kal-crown {
+  animation: kal-crown-shimmer 3.2s ease-in-out infinite, kal-crown-bob 4.8s ease-in-out infinite;
+}
+@keyframes kal-crown-bob {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  25%     { transform: translateY(-1.5px) rotate(-1.2deg); }
+  75%     { transform: translateY(-1.5px) rotate(1.2deg); }
+}
+@keyframes kal-crown-shimmer {
+  0%,100% { filter: drop-shadow(0 0 4px rgba(232,180,184,0.45)); }
+  50%     { filter: drop-shadow(0 0 14px rgba(232,180,184,0.95)) drop-shadow(0 0 22px rgba(212,175,55,0.55)); }
+}
+
+/* Heute-Button: subtiler Goldschimmer läuft durch den Rand */
+.kal-today-btn::after {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(232,180,184,0.45) 50%,
+    transparent 60%,
+    transparent 100%);
+  background-size: 220% 100%;
+  animation: kal-shimmer-sweep 4.5s linear infinite;
+}
+@keyframes kal-shimmer-sweep {
+  0%   { background-position: -110% 0; }
+  100% { background-position:  110% 0; }
+}
+
+/* Surface Brokat: leichte Bewegung */
+.kal-surface.kal-stucco {
+  animation: kal-brokat-drift 24s linear infinite;
+}
+@keyframes kal-brokat-drift {
+  0%   { background-position: 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 28px 28px, -28px 28px, 0 0, 0 0; }
+}
+
 /* ========== RESPECT REDUCED MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+  .kal-sparkle-layer { display: none; }
+  .kal-crown,
+  .kal-cartouche svg,
+  .kal-side-rail,
+  .kal-fab,
+  .kal-corner-tl, .kal-corner-tr, .kal-corner-bl, .kal-corner-br,
+  .kal-flourish svg,
+  .kal-today-btn::after,
+  .kal-surface.kal-stucco,
+  .kal-menu-panel::after,
+  .kal-menu-crown { animation: none !important; }
+}
