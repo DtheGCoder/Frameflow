@@ -367,6 +367,7 @@ async function handleUploadSubmit(event) {
 
 async function handleSettingsSubmit(event) {
   event.preventDefault();
+  if (typeof window.__flushFrameUiScales === 'function') window.__flushFrameUiScales();
   const f = elements.settingsForm;
   const payload = {
     frameName: f.frameName.value,
@@ -493,12 +494,29 @@ elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(sendLive, 120);
     };
+    const flushNow = () => {
+      const val = Number(slider.value);
+      latestValues[key] = val;
+      clearTimeout(debounceTimer);
+      sendLive();
+    };
     slider.addEventListener('input', onChange);
-    slider.addEventListener('change', onChange);
+    slider.addEventListener('change', flushNow);
+    ['pointerup','touchend','mouseup','blur'].forEach((ev) => {
+      slider.addEventListener(ev, flushNow, { passive: true });
+    });
     ['pointerdown','touchstart','mousedown'].forEach((ev) => {
       slider.addEventListener(ev, () => markInteract(key), { passive: true });
     });
   });
+
+  // Flush pending debounce synchronously (e.g. before Einstellungen speichern)
+  window.__flushFrameUiScales = function () {
+    if (Object.keys(latestValues).length) {
+      clearTimeout(debounceTimer);
+      sendLive();
+    }
+  };
 
   // Populate from state (but NEVER overwrite a slider the user touched in the last 1500ms)
   window.__populateFrameUiScales = function (calSettings) {
