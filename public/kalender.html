@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="/static/styles.css?v=3" />
-    <link rel="stylesheet" href="/static/kalender.css?v=royal7" />
+    <link rel="stylesheet" href="/static/kalender.css?v=royal8" />
   </head>
   <body class="kal-shell">
 
@@ -136,7 +136,7 @@
     </main>
 
     <!-- ============ MENÜ OVERLAY (öffnet sich aus dem Hamburger oben links) ============ -->
-    <div id="kalMenuOverlay" class="kal-menu-overlay" aria-hidden="true">
+    <div id="kalMenuOverlay" class="kal-menu-overlay" aria-hidden="true" style="position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 240ms ease,visibility 0s linear 240ms;">
       <div class="kal-menu-scrim" data-close-menu></div>
       <aside class="kal-menu-panel" role="dialog" aria-label="Menü">
         <div class="kal-menu-arrow" aria-hidden="true"></div>
