@@ -136,7 +136,37 @@
     </main>
 
     <!-- ============ MENÜ OVERLAY (öffnet sich aus dem Hamburger oben links) ============ -->
-    <div id="kalMenuOverlay" class="kal-menu-overlay" aria-hidden="true" style="position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 240ms ease,visibility 0s linear 240ms;">
+    <style>
+      /* Modern kompaktes Handy-Menue - Inline fuer garantiertes Laden */
+      #kalMenuOverlay.kal-menu-overlay{position:fixed!important;inset:0!important;z-index:200!important}
+      #kalMenuOverlay .kal-menu-scrim{position:absolute!important;inset:0!important;background:rgba(8,5,12,0.55)!important;backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important}
+      #kalMenuOverlay .kal-menu-panel{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 56px)!important;left:10px!important;width:min(280px,calc(100vw - 20px))!important;max-height:calc(100vh - env(safe-area-inset-top,0px) - 72px)!important;background:linear-gradient(180deg,#1a1220 0%,#120a18 100%)!important;border:1px solid rgba(212,163,115,0.35)!important;border-radius:16px!important;box-shadow:0 20px 50px rgba(0,0,0,0.6),0 0 0 1px rgba(212,175,55,0.15) inset!important;padding:10px!important;display:flex!important;flex-direction:column!important;gap:6px!important;overflow:hidden!important;transform-origin:top left!important;animation:kalMenuPop 180ms cubic-bezier(.2,.9,.3,1.2)!important;font-family:'Inter',system-ui,sans-serif!important}
+      @keyframes kalMenuPop{from{opacity:0;transform:scale(0.92) translateY(-6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+      #kalMenuOverlay .kal-menu-arrow{position:absolute!important;top:-6px!important;left:18px!important;width:12px!important;height:12px!important;background:#1a1220!important;border-left:1px solid rgba(212,163,115,0.35)!important;border-top:1px solid rgba(212,163,115,0.35)!important;transform:rotate(45deg)!important;border-radius:2px 0 0 0!important}
+      #kalMenuOverlay .kal-menu-head{display:flex!important;align-items:center!important;gap:8px!important;padding:4px 6px 2px!important}
+      #kalMenuOverlay .kal-menu-crown{color:#d4af37!important;flex-shrink:0!important;width:20px!important;height:10px!important}
+      #kalMenuOverlay .kal-menu-title{font-family:'Cormorant Garamond',serif!important;font-size:17px!important;font-weight:600!important;color:#faf6f2!important;margin:0!important;flex:1!important;letter-spacing:0.3px!important;line-height:1!important}
+      #kalMenuOverlay .kal-menu-close{width:28px!important;height:28px!important;padding:0!important;background:rgba(255,255,255,0.04)!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:8px!important;color:#faf6f2!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;flex-shrink:0!important}
+      #kalMenuOverlay .kal-menu-close svg{width:14px!important;height:14px!important}
+      #kalMenuOverlay .kal-menu-close:active{background:rgba(212,163,115,0.2)!important}
+      #kalMenuOverlay .kal-menu-divider{height:1px!important;background:linear-gradient(90deg,transparent,rgba(212,163,115,0.4),transparent)!important;margin:2px 0!important;border:0!important}
+      #kalMenuOverlay .kal-menu-list{display:flex!important;flex-direction:column!important;gap:4px!important;padding:2px!important;margin:0!important}
+      #kalMenuOverlay .kal-menu-item{display:grid!important;grid-template-columns:36px 1fr 16px!important;align-items:center!important;gap:10px!important;padding:10px 10px!important;background:rgba(255,255,255,0.02)!important;border:1px solid rgba(255,255,255,0.06)!important;border-radius:12px!important;color:#faf6f2!important;text-align:left!important;cursor:pointer!important;transition:background 160ms ease,border-color 160ms ease,transform 160ms ease!important;font:inherit!important;width:100%!important}
+      #kalMenuOverlay .kal-menu-item:active{transform:scale(0.98)!important}
+      #kalMenuOverlay .kal-menu-item.is-active{background:linear-gradient(135deg,rgba(232,180,184,0.12),rgba(212,163,115,0.10),rgba(212,175,55,0.08))!important;border-color:rgba(212,175,55,0.45)!important;box-shadow:0 0 0 1px rgba(212,175,55,0.15) inset,0 4px 16px rgba(212,163,115,0.15)!important}
+      #kalMenuOverlay .kal-menu-item-icon{width:36px!important;height:36px!important;border-radius:10px!important;background:radial-gradient(circle at 30% 30%,rgba(232,180,184,0.18),rgba(212,163,115,0.10) 60%,rgba(20,15,25,0.4) 100%)!important;border:1px solid rgba(212,163,115,0.3)!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#d4af37!important;flex-shrink:0!important}
+      #kalMenuOverlay .kal-menu-item-icon svg{width:18px!important;height:18px!important;display:block!important}
+      #kalMenuOverlay .kal-menu-item.is-active .kal-menu-item-icon{background:radial-gradient(circle at 30% 30%,rgba(232,180,184,0.35),rgba(212,163,115,0.22) 60%,rgba(20,15,25,0.3) 100%)!important;border-color:rgba(212,175,55,0.65)!important;box-shadow:0 0 12px rgba(212,163,115,0.35)!important}
+      #kalMenuOverlay .kal-menu-item-text{display:flex!important;flex-direction:column!important;gap:1px!important;min-width:0!important;overflow:hidden!important}
+      #kalMenuOverlay .kal-menu-item-title{font-family:'Cormorant Garamond',serif!important;font-size:16px!important;font-weight:600!important;color:#faf6f2!important;line-height:1.15!important;letter-spacing:0.2px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+      #kalMenuOverlay .kal-menu-item-sub{font-family:'Inter',sans-serif!important;font-size:11px!important;font-weight:400!important;color:rgba(250,246,242,0.55)!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+      #kalMenuOverlay .kal-menu-item.is-active .kal-menu-item-sub{color:rgba(212,163,115,0.85)!important}
+      #kalMenuOverlay .kal-menu-item-chev{width:14px!important;height:14px!important;color:rgba(250,246,242,0.35)!important;flex-shrink:0!important;transition:transform 200ms ease,color 200ms ease!important}
+      #kalMenuOverlay .kal-menu-item.is-active .kal-menu-item-chev{color:#d4af37!important;transform:translateX(2px)!important}
+      #kalMenuOverlay .kal-menu-flourish{display:flex!important;justify-content:center!important;color:rgba(212,163,115,0.35)!important;padding:2px 10px 0!important;margin-top:2px!important}
+      #kalMenuOverlay .kal-menu-flourish svg{height:10px!important;width:60%!important;max-width:180px!important}
+    </style>
+    <div id="kalMenuOverlay" class="kal-menu-overlay" aria-hidden="true" style="position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 180ms ease,visibility 0s linear 180ms;">
       <div class="kal-menu-scrim" data-close-menu></div>
       <aside class="kal-menu-panel" role="dialog" aria-label="Menü">
         <div class="kal-menu-arrow" aria-hidden="true"></div>
