@@ -21,6 +21,11 @@
       .frame-shell .frame-meta > #frameSensors{justify-self:center}
       .frame-shell .frame-meta > #frameClock{justify-self:end;margin-right:0.4rem}
       #frameCounter{display:none !important}
+      /* AQI nur als Icon, kein Text - so verschiebt sich nichts wenn der Zustand wechselt */
+      #frameSensorAqiLabel{display:none !important}
+      /* Stabile Breiten fuer Temp/Feuchte, damit das Layout nicht zappelt */
+      #frameSensorTemp{min-width:2.6rem;display:inline-block;text-align:right}
+      #frameSensorHum{min-width:2.4rem;display:inline-block;text-align:right}
     </style>
   </head>
   <body class="frame-shell">
