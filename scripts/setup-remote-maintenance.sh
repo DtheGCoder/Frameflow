@@ -29,8 +29,8 @@ Defaults:${SERVICE_USER} !requiretty
 ${SERVICE_USER} ALL=(root) NOPASSWD: /usr/bin/systemctl start frameflow
 ${SERVICE_USER} ALL=(root) NOPASSWD: /usr/bin/systemctl stop frameflow
 ${SERVICE_USER} ALL=(root) NOPASSWD: /usr/bin/systemctl restart frameflow
-${SERVICE_USER} ALL=(root) NOPASSWD: /usr/bin/git -C /opt/frameflow pull --ff-only
-${SERVICE_USER} ALL=(root) NOPASSWD: /usr/bin/npm --prefix /opt/frameflow install --omit=dev
+${SERVICE_USER} ALL=(root) NOPASSWD: /usr/bin/git -C ${APP_DIR} pull --ff-only
+${SERVICE_USER} ALL=(root) NOPASSWD: /usr/bin/npm --prefix ${APP_DIR} install --omit=dev
 ${SERVICE_USER} ALL=(root) NOPASSWD: /usr/sbin/reboot
 EOF
 

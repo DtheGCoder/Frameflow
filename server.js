@@ -19,6 +19,8 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const APP_BUILD = String(Date.now());
 const FRAMEFLOW_APP_DIR = process.env.FRAMEFLOW_APP_DIR || '/opt/frameflow';
+const PI_AGENT_URL = String(process.env.FRAMEFLOW_PI_AGENT_URL || '').replace(/\/$/, '');
+const PI_AGENT_TOKEN = String(process.env.FRAMEFLOW_PI_AGENT_TOKEN || '');
 const ROOT_DIR = __dirname;
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
@@ -481,6 +483,40 @@ function runShell(command, timeout = 30000) {
   });
 }
 
+function hasPiAgentProxy() {
+  return Boolean(PI_AGENT_URL && PI_AGENT_TOKEN);
+}
+
+async function callPiAgent(pathname, method = 'GET', body = undefined) {
+  if (!hasPiAgentProxy()) {
+    throw new Error('Pi agent proxy is not configured. Set FRAMEFLOW_PI_AGENT_URL and FRAMEFLOW_PI_AGENT_TOKEN.');
+  }
+  if (typeof fetch !== 'function') {
+    throw new Error('fetch unavailable (Node < 18)');
+  }
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 12000);
+  try {
+    const response = await fetch(`${PI_AGENT_URL}${pathname}`, {
+      method,
+      signal: ctrl.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Frameflow-Token': PI_AGENT_TOKEN,
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = payload.error || `Pi agent HTTP ${response.status}`;
+      throw new Error(message);
+    }
+    return payload;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function readDeviceAdminState() {
   const fallback = { autoUpdateEnabled: false, autoUpdateIntervalMin: 30 };
   if (!fs.existsSync(DEVICE_ADMIN_FILE)) return fallback;
@@ -552,6 +588,14 @@ async function getSavedWifiConnections() {
 
 // Wi-Fi management for kiosk devices (Linux + NetworkManager).
 app.get('/api/device/wifi/status', async (_req, res) => {
+  if (hasPiAgentProxy()) {
+    try {
+      const payload = await callPiAgent('/api/pi/wifi/status');
+      return res.json(payload);
+    } catch (error) {
+      return res.status(502).json({ supported: false, error: error.message || 'Pi agent unavailable.' });
+    }
+  }
   try {
     const wifi = await getWifiInterface();
     if (!wifi) {
@@ -580,6 +624,14 @@ app.get('/api/device/wifi/status', async (_req, res) => {
 });
 
 app.get('/api/device/wifi/scan', async (_req, res) => {
+  if (hasPiAgentProxy()) {
+    try {
+      const payload = await callPiAgent('/api/pi/wifi/scan');
+      return res.json(payload);
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi agent unavailable.' });
+    }
+  }
   try {
     const raw = await runNmcli(['-t', '-f', 'ACTIVE,SSID,SIGNAL,SECURITY', 'device', 'wifi', 'list', '--rescan', 'yes']);
     const dedup = new Map();
@@ -607,6 +659,14 @@ app.get('/api/device/wifi/scan', async (_req, res) => {
 });
 
 app.get('/api/device/wifi/saved', async (_req, res) => {
+  if (hasPiAgentProxy()) {
+    try {
+      const payload = await callPiAgent('/api/pi/wifi/saved');
+      return res.json(payload);
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi agent unavailable.' });
+    }
+  }
   try {
     const connections = await getSavedWifiConnections();
     res.json({ connections });
@@ -616,6 +676,14 @@ app.get('/api/device/wifi/saved', async (_req, res) => {
 });
 
 app.post('/api/device/wifi/auto-connect', async (_req, res) => {
+  if (hasPiAgentProxy()) {
+    try {
+      const payload = await callPiAgent('/api/pi/wifi/auto-connect', 'POST', {});
+      return res.json(payload);
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi agent unavailable.' });
+    }
+  }
   try {
     const wifi = await getWifiInterface();
     if (!wifi) return res.status(404).json({ error: 'Kein WLAN-Interface gefunden.' });
@@ -653,6 +721,14 @@ app.post('/api/device/wifi/connect', async (req, res) => {
   const ssid = sanitizeText(req.body?.ssid || '', '').slice(0, 80);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
   if (!ssid) return res.status(400).json({ error: 'SSID fehlt.' });
+  if (hasPiAgentProxy()) {
+    try {
+      const payload = await callPiAgent('/api/pi/wifi/connect', 'POST', { ssid, password });
+      return res.json(payload);
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi agent unavailable.' });
+    }
+  }
   try {
     const wifi = await getWifiInterface();
     if (!wifi) return res.status(404).json({ error: 'Kein WLAN-Interface gefunden.' });
@@ -675,6 +751,14 @@ app.post('/api/device/wifi/connect', async (req, res) => {
 // POST /api/sensors/ingest  — the Pi pushes here.
 
 app.get('/api/device/maintenance/status', async (_req, res) => {
+  if (hasPiAgentProxy()) {
+    try {
+      const payload = await callPiAgent('/api/pi/maintenance/status');
+      return res.json(payload);
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi agent unavailable.' });
+    }
+  }
   try {
     const [serviceRaw, kioskRaw, gitRaw] = await Promise.all([
       runShell('systemctl is-active frameflow || true'),
@@ -693,6 +777,15 @@ app.get('/api/device/maintenance/status', async (_req, res) => {
 });
 
 app.put('/api/device/maintenance/auto-update', (req, res) => {
+  if (hasPiAgentProxy()) {
+    callPiAgent('/api/pi/maintenance/auto-update', 'PUT', {
+      autoUpdateEnabled: Boolean(req.body?.autoUpdateEnabled),
+      autoUpdateIntervalMin: sanitizeNumber(req.body?.autoUpdateIntervalMin, 30, 5, 720),
+    })
+      .then((payload) => res.json(payload))
+      .catch((error) => res.status(502).json({ error: error.message || 'Pi agent unavailable.' }));
+    return;
+  }
   deviceAdminState = {
     autoUpdateEnabled: Boolean(req.body?.autoUpdateEnabled),
     autoUpdateIntervalMin: sanitizeNumber(req.body?.autoUpdateIntervalMin, 30, 5, 720),
@@ -704,6 +797,14 @@ app.put('/api/device/maintenance/auto-update', (req, res) => {
 
 app.post('/api/device/maintenance/action', async (req, res) => {
   const action = sanitizeShortText(req.body?.action || '', '');
+  if (hasPiAgentProxy()) {
+    try {
+      const payload = await callPiAgent('/api/pi/maintenance/action', 'POST', { action });
+      return res.json(payload);
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi agent unavailable.' });
+    }
+  }
   const actions = {
     frameflowRestart: {
       command: 'sudo -n /usr/bin/systemctl restart frameflow',
