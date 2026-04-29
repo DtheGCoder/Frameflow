@@ -3,6 +3,9 @@ import json
 import os
 import shlex
 import subprocess
+import threading
+import time
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 BIND = os.environ.get('FRAMEFLOW_PI_AGENT_BIND', '0.0.0.0')
@@ -10,6 +13,9 @@ PORT = int(os.environ.get('FRAMEFLOW_PI_AGENT_PORT', '8788'))
 TOKEN = os.environ.get('FRAMEFLOW_PI_AGENT_TOKEN', '')
 APP_DIR = os.environ.get('FRAMEFLOW_APP_DIR', '/opt/Frameflow')
 STATE_FILE = os.environ.get('FRAMEFLOW_PI_AGENT_STATE', '/opt/Frameflow/data/pi-agent.json')
+RELAY_SERVER = os.environ.get('FRAMEFLOW_PI_RELAY_SERVER_URL', '').rstrip('/')
+RELAY_TOKEN = os.environ.get('FRAMEFLOW_PI_RELAY_TOKEN', '')
+DEVICE_ID = os.environ.get('FRAMEFLOW_PI_DEVICE_ID', os.uname().nodename)
 
 
 def load_state():
@@ -231,6 +237,75 @@ def maint_action(payload):
     return 200, {'ok': True, 'action': action, 'output': text}
 
 
+def _relay_request(path, body, timeout=12):
+    if not RELAY_SERVER:
+        raise RuntimeError('relay server missing')
+    url = f"{RELAY_SERVER}{path}"
+    data = json.dumps(body or {}, ensure_ascii=True).encode('utf-8')
+    req = urllib.request.Request(url, data=data, method='POST')
+    req.add_header('Content-Type', 'application/json')
+    if RELAY_TOKEN:
+        req.add_header('X-Frameflow-Token', RELAY_TOKEN)
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        raw = resp.read().decode('utf-8')
+    return json.loads(raw) if raw else {}
+
+
+def execute_relay_command(command):
+    ctype = str((command or {}).get('type', '')).strip()
+    payload = (command or {}).get('payload', {}) or {}
+    if ctype == 'wifi.status':
+        status, body = wifi_status()
+    elif ctype == 'wifi.scan':
+        status, body = wifi_scan()
+    elif ctype == 'wifi.saved':
+        status, body = 200, {'connections': get_saved_connections()}
+    elif ctype == 'wifi.connect':
+        status, body = wifi_connect(payload)
+    elif ctype == 'wifi.autoConnect':
+        status, body = wifi_auto_connect()
+    elif ctype == 'maintenance.status':
+        status, body = maint_status(load_state())
+    elif ctype == 'maintenance.autoUpdate.set':
+        status, body = maint_set_auto_update(payload)
+    elif ctype == 'maintenance.action':
+        status, body = maint_action(payload)
+    else:
+        status, body = 400, {'error': f'unknown command type: {ctype}'}
+    return {'status': status, 'body': body}
+
+
+def relay_loop():
+    if not RELAY_SERVER:
+        return
+    while True:
+        try:
+            poll = _relay_request('/api/pi/relay/poll', {
+                'deviceId': DEVICE_ID,
+                'host': os.uname().nodename,
+            }, timeout=15)
+            cmd = poll.get('command') if isinstance(poll, dict) else None
+            if cmd and cmd.get('id'):
+                try:
+                    result = execute_relay_command(cmd)
+                    _relay_request('/api/pi/relay/result', {
+                        'deviceId': DEVICE_ID,
+                        'commandId': cmd.get('id'),
+                        'ok': True,
+                        'body': result,
+                    }, timeout=20)
+                except Exception as exc:
+                    _relay_request('/api/pi/relay/result', {
+                        'deviceId': DEVICE_ID,
+                        'commandId': cmd.get('id'),
+                        'ok': False,
+                        'error': str(exc),
+                    }, timeout=20)
+            time.sleep(1.5)
+        except Exception:
+            time.sleep(3)
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, status, payload):
         body = json.dumps(payload, ensure_ascii=True).encode('utf-8')
@@ -315,6 +390,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
+    if RELAY_SERVER:
+        threading.Thread(target=relay_loop, daemon=True).start()
     httpd = ThreadingHTTPServer((BIND, PORT), Handler)
     print(f'frameflow-pi-agent listening on http://{BIND}:{PORT}')
     httpd.serve_forever()

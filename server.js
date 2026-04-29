@@ -21,6 +21,9 @@ const APP_BUILD = String(Date.now());
 const FRAMEFLOW_APP_DIR = process.env.FRAMEFLOW_APP_DIR || '/opt/frameflow';
 const PI_AGENT_URL = String(process.env.FRAMEFLOW_PI_AGENT_URL || '').replace(/\/$/, '');
 const PI_AGENT_TOKEN = String(process.env.FRAMEFLOW_PI_AGENT_TOKEN || '');
+const PI_RELAY_ENABLED = /^(1|true|yes)$/i.test(String(process.env.FRAMEFLOW_PI_RELAY_ENABLED || ''));
+const PI_RELAY_TOKEN = String(process.env.FRAMEFLOW_PI_RELAY_TOKEN || '');
+const PI_RELAY_DEVICE_ID = String(process.env.FRAMEFLOW_PI_RELAY_DEVICE_ID || '');
 const ROOT_DIR = __dirname;
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
@@ -392,6 +395,47 @@ app.get('/api/calendar', (_req, res) => {
   res.json(serializeCalendar(appState.calendar));
 });
 
+// Pi relay endpoints: Pi polls for commands and posts command results.
+app.post('/api/pi/relay/poll', express.json({ limit: '64kb' }), (req, res) => {
+  if (!relayAuthOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  const deviceId = sanitizeShortText(req.body?.deviceId, '');
+  const host = sanitizeShortText(req.body?.host, '');
+  if (!deviceId) return res.status(400).json({ error: 'deviceId fehlt.' });
+
+  relayState.deviceId = deviceId;
+  relayState.host = host;
+  relayState.lastSeenAt = Date.now();
+
+  if (PI_RELAY_DEVICE_ID && deviceId !== PI_RELAY_DEVICE_ID) {
+    return res.json({ ok: true, command: null, note: 'device ignored (not configured target)' });
+  }
+
+  let command = null;
+  if (relayState.pendingCommand && relayState.pendingCommand.targetDeviceId === deviceId) {
+    command = relayState.pendingCommand;
+    relayState.pendingCommand = null;
+  }
+  res.json({ ok: true, command });
+});
+
+app.post('/api/pi/relay/result', express.json({ limit: '128kb' }), (req, res) => {
+  if (!relayAuthOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  const deviceId = sanitizeShortText(req.body?.deviceId, '');
+  const commandId = sanitizeShortText(req.body?.commandId, '');
+  if (!deviceId || !commandId) {
+    return res.status(400).json({ error: 'deviceId/commandId fehlt.' });
+  }
+  relayState.deviceId = deviceId;
+  relayState.lastSeenAt = Date.now();
+  relayState.commandResults.set(commandId, {
+    ok: Boolean(req.body?.ok),
+    body: req.body?.body || {},
+    error: sanitizeText(req.body?.error || '', ''),
+    at: Date.now(),
+  });
+  res.json({ ok: true });
+});
+
 // Local sensors (DHT22 + CCS811) — see scripts/sensors.py.
 // Two ways data can reach us:
 //   (1) Push: the Pi POSTs readings to /api/sensors/ingest (recommended when
@@ -487,6 +531,65 @@ function hasPiAgentProxy() {
   return Boolean(PI_AGENT_URL);
 }
 
+function hasPiRelayProxy() {
+  return PI_RELAY_ENABLED;
+}
+
+function relayAuthOk(req) {
+  if (!PI_RELAY_TOKEN) return true;
+  const token = req.get('X-Frameflow-Token') || '';
+  return token === PI_RELAY_TOKEN;
+}
+
+function targetRelayDeviceId() {
+  return PI_RELAY_DEVICE_ID || relayState.deviceId;
+}
+
+function dispatchRelayCommand(type, payload = {}, timeoutMs = 15000) {
+  return new Promise((resolve, reject) => {
+    const target = targetRelayDeviceId();
+    if (!target) {
+      reject(new Error('Kein Pi verbunden (relay).'));
+      return;
+    }
+    if (Date.now() - relayState.lastSeenAt > 30000) {
+      reject(new Error('Pi ist offline (letztes Lebenszeichen > 30s).'));
+      return;
+    }
+    if (relayState.pendingCommand) {
+      reject(new Error('Pi ist beschäftigt, bitte in 1-2 Sekunden erneut versuchen.'));
+      return;
+    }
+    const id = `cmd-${Date.now()}-${++relayCommandSeq}`;
+    relayState.pendingCommand = {
+      id,
+      targetDeviceId: target,
+      type,
+      payload,
+      createdAt: Date.now(),
+    };
+
+    const started = Date.now();
+    const timer = setInterval(() => {
+      const result = relayState.commandResults.get(id);
+      if (result) {
+        clearInterval(timer);
+        relayState.commandResults.delete(id);
+        if (result.ok) resolve(result.body || {});
+        else reject(new Error(result.error || 'Pi command failed'));
+        return;
+      }
+      if (Date.now() - started > timeoutMs) {
+        clearInterval(timer);
+        if (relayState.pendingCommand && relayState.pendingCommand.id === id) {
+          relayState.pendingCommand = null;
+        }
+        reject(new Error('Pi command timeout'));
+      }
+    }, 250);
+  });
+}
+
 async function callPiAgent(pathname, method = 'GET', body = undefined) {
   if (!hasPiAgentProxy()) {
     throw new Error('Pi agent proxy is not configured. Set FRAMEFLOW_PI_AGENT_URL.');
@@ -540,6 +643,14 @@ function writeDeviceAdminState(next) {
 
 let deviceAdminState = readDeviceAdminState();
 let autoUpdateTimer = null;
+let relayCommandSeq = 0;
+const relayState = {
+  deviceId: '',
+  host: '',
+  lastSeenAt: 0,
+  pendingCommand: null,
+  commandResults: new Map(),
+};
 
 async function runAutoUpdateCycle() {
   try {
@@ -591,6 +702,14 @@ async function getSavedWifiConnections() {
 
 // Wi-Fi management for kiosk devices (Linux + NetworkManager).
 app.get('/api/device/wifi/status', async (_req, res) => {
+  if (hasPiRelayProxy()) {
+    try {
+      const payload = await dispatchRelayCommand('wifi.status', {}, 15000);
+      return res.status(payload.status || 200).json(payload.body || {});
+    } catch (error) {
+      return res.status(502).json({ supported: false, error: error.message || 'Pi relay unavailable.' });
+    }
+  }
   if (hasPiAgentProxy()) {
     try {
       const payload = await callPiAgent('/api/pi/wifi/status');
@@ -627,6 +746,14 @@ app.get('/api/device/wifi/status', async (_req, res) => {
 });
 
 app.get('/api/device/wifi/scan', async (_req, res) => {
+  if (hasPiRelayProxy()) {
+    try {
+      const payload = await dispatchRelayCommand('wifi.scan', {}, 20000);
+      return res.status(payload.status || 200).json(payload.body || {});
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi relay unavailable.' });
+    }
+  }
   if (hasPiAgentProxy()) {
     try {
       const payload = await callPiAgent('/api/pi/wifi/scan');
@@ -662,6 +789,14 @@ app.get('/api/device/wifi/scan', async (_req, res) => {
 });
 
 app.get('/api/device/wifi/saved', async (_req, res) => {
+  if (hasPiRelayProxy()) {
+    try {
+      const payload = await dispatchRelayCommand('wifi.saved', {}, 15000);
+      return res.status(payload.status || 200).json(payload.body || {});
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi relay unavailable.' });
+    }
+  }
   if (hasPiAgentProxy()) {
     try {
       const payload = await callPiAgent('/api/pi/wifi/saved');
@@ -679,6 +814,14 @@ app.get('/api/device/wifi/saved', async (_req, res) => {
 });
 
 app.post('/api/device/wifi/auto-connect', async (_req, res) => {
+  if (hasPiRelayProxy()) {
+    try {
+      const payload = await dispatchRelayCommand('wifi.autoConnect', {}, 20000);
+      return res.status(payload.status || 200).json(payload.body || {});
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi relay unavailable.' });
+    }
+  }
   if (hasPiAgentProxy()) {
     try {
       const payload = await callPiAgent('/api/pi/wifi/auto-connect', 'POST', {});
@@ -724,6 +867,14 @@ app.post('/api/device/wifi/connect', async (req, res) => {
   const ssid = sanitizeText(req.body?.ssid || '', '').slice(0, 80);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
   if (!ssid) return res.status(400).json({ error: 'SSID fehlt.' });
+  if (hasPiRelayProxy()) {
+    try {
+      const payload = await dispatchRelayCommand('wifi.connect', { ssid, password }, 25000);
+      return res.status(payload.status || 200).json(payload.body || {});
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi relay unavailable.' });
+    }
+  }
   if (hasPiAgentProxy()) {
     try {
       const payload = await callPiAgent('/api/pi/wifi/connect', 'POST', { ssid, password });
@@ -754,6 +905,14 @@ app.post('/api/device/wifi/connect', async (req, res) => {
 // POST /api/sensors/ingest  — the Pi pushes here.
 
 app.get('/api/device/maintenance/status', async (_req, res) => {
+  if (hasPiRelayProxy()) {
+    try {
+      const payload = await dispatchRelayCommand('maintenance.status', {}, 15000);
+      return res.status(payload.status || 200).json(payload.body || {});
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi relay unavailable.' });
+    }
+  }
   if (hasPiAgentProxy()) {
     try {
       const payload = await callPiAgent('/api/pi/maintenance/status');
@@ -780,6 +939,15 @@ app.get('/api/device/maintenance/status', async (_req, res) => {
 });
 
 app.put('/api/device/maintenance/auto-update', (req, res) => {
+  if (hasPiRelayProxy()) {
+    dispatchRelayCommand('maintenance.autoUpdate.set', {
+      autoUpdateEnabled: Boolean(req.body?.autoUpdateEnabled),
+      autoUpdateIntervalMin: sanitizeNumber(req.body?.autoUpdateIntervalMin, 30, 5, 720),
+    }, 15000)
+      .then((payload) => res.status(payload.status || 200).json(payload.body || {}))
+      .catch((error) => res.status(502).json({ error: error.message || 'Pi relay unavailable.' }));
+    return;
+  }
   if (hasPiAgentProxy()) {
     callPiAgent('/api/pi/maintenance/auto-update', 'PUT', {
       autoUpdateEnabled: Boolean(req.body?.autoUpdateEnabled),
@@ -800,6 +968,14 @@ app.put('/api/device/maintenance/auto-update', (req, res) => {
 
 app.post('/api/device/maintenance/action', async (req, res) => {
   const action = sanitizeShortText(req.body?.action || '', '');
+  if (hasPiRelayProxy()) {
+    try {
+      const payload = await dispatchRelayCommand('maintenance.action', { action }, 180000);
+      return res.status(payload.status || 200).json(payload.body || {});
+    } catch (error) {
+      return res.status(502).json({ error: error.message || 'Pi relay unavailable.' });
+    }
+  }
   if (hasPiAgentProxy()) {
     try {
       const payload = await callPiAgent('/api/pi/maintenance/action', 'POST', { action });

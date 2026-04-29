@@ -10,9 +10,16 @@ APP_DIR="${APP_DIR:-/opt/Frameflow}"
 PI_AGENT_PORT="${PI_AGENT_PORT:-8788}"
 PI_AGENT_BIND="${PI_AGENT_BIND:-0.0.0.0}"
 PI_AGENT_TOKEN="${PI_AGENT_TOKEN:-}"
+PI_RELAY_SERVER_URL="${PI_RELAY_SERVER_URL:-}"
+PI_RELAY_TOKEN="${PI_RELAY_TOKEN:-}"
+PI_DEVICE_ID="${PI_DEVICE_ID:-$(hostname)}"
 
 if [[ -z "$PI_AGENT_TOKEN" ]]; then
   echo "WARN: PI_AGENT_TOKEN is empty. Agent will accept unauthenticated LAN requests." >&2
+fi
+
+if [[ -z "$PI_RELAY_SERVER_URL" ]]; then
+  echo "WARN: PI_RELAY_SERVER_URL not set. Relay mode (Pi -> Server) disabled." >&2
 fi
 
 if [[ ! -f "$APP_DIR/scripts/pi-agent.py" ]]; then
@@ -39,6 +46,9 @@ Environment=FRAMEFLOW_PI_AGENT_BIND=$PI_AGENT_BIND
 Environment=FRAMEFLOW_PI_AGENT_PORT=$PI_AGENT_PORT
 Environment=FRAMEFLOW_PI_AGENT_TOKEN=$PI_AGENT_TOKEN
 Environment=FRAMEFLOW_PI_AGENT_STATE=$APP_DIR/data/pi-agent.json
+Environment=FRAMEFLOW_PI_RELAY_SERVER_URL=$PI_RELAY_SERVER_URL
+Environment=FRAMEFLOW_PI_RELAY_TOKEN=$PI_RELAY_TOKEN
+Environment=FRAMEFLOW_PI_DEVICE_ID=$PI_DEVICE_ID
 ExecStart=/usr/bin/python3 $APP_DIR/scripts/pi-agent.py
 Restart=on-failure
 RestartSec=3
@@ -53,4 +63,6 @@ systemctl enable --now frameflow-pi-agent.service
 echo "OK"
 echo "- service: frameflow-pi-agent"
 echo "- bind: $PI_AGENT_BIND:$PI_AGENT_PORT"
+echo "- relay server: ${PI_RELAY_SERVER_URL:-disabled}"
+echo "- device id: $PI_DEVICE_ID"
 echo "- app dir: $APP_DIR"
