@@ -4,6 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const http = require('http');
 const multer = require('multer');
+const { execFile } = require('child_process');
 const { Server } = require('socket.io');
 
 const app = express();
@@ -411,6 +412,130 @@ function readSensorsFromFile(cb) {
     try { cb(JSON.parse(raw)); } catch { cb(null); }
   });
 }
+
+function splitNmcliFields(line) {
+  const fields = [];
+  let current = '';
+  let escaped = false;
+  for (const ch of String(line || '')) {
+    if (escaped) {
+      current += ch;
+      escaped = false;
+      continue;
+    }
+    if (ch === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (ch === ':') {
+      fields.push(current);
+      current = '';
+      continue;
+    }
+    current += ch;
+  }
+  fields.push(current);
+  return fields;
+}
+
+function runNmcli(args) {
+  return new Promise((resolve, reject) => {
+    execFile('nmcli', args, { timeout: 9000, windowsHide: true }, (error, stdout, stderr) => {
+      if (error) {
+        const err = new Error((stderr || error.message || 'nmcli failed').trim());
+        err.code = error.code;
+        reject(err);
+        return;
+      }
+      resolve(String(stdout || '').trim());
+    });
+  });
+}
+
+async function getWifiInterface() {
+  const raw = await runNmcli(['-t', '-f', 'DEVICE,TYPE,STATE', 'device', 'status']);
+  const lines = raw.split(/\r?\n/).filter(Boolean);
+  const wifiLine = lines
+    .map((line) => splitNmcliFields(line))
+    .find((parts) => parts[1] === 'wifi');
+  if (!wifiLine) return null;
+  return {
+    device: wifiLine[0],
+    state: wifiLine[2] || 'unknown',
+  };
+}
+
+// Wi-Fi management for kiosk devices (Linux + NetworkManager).
+app.get('/api/device/wifi/status', async (_req, res) => {
+  try {
+    const wifi = await getWifiInterface();
+    if (!wifi) {
+      return res.status(404).json({ supported: false, error: 'Kein WLAN-Interface gefunden.' });
+    }
+    const detailRaw = await runNmcli(['-t', '-f', 'GENERAL.CONNECTION,IP4.ADDRESS', 'device', 'show', wifi.device]);
+    let ssid = '';
+    let ip = '';
+    detailRaw.split(/\r?\n/).forEach((line) => {
+      if (line.startsWith('GENERAL.CONNECTION:')) ssid = line.split(':').slice(1).join(':').trim();
+      if (line.startsWith('IP4.ADDRESS[') || line.startsWith('IP4.ADDRESS:')) {
+        const value = line.split(':').slice(1).join(':').trim();
+        if (value && !ip) ip = value.replace(/\/.+$/, '');
+      }
+    });
+    res.json({
+      supported: true,
+      device: wifi.device,
+      state: wifi.state,
+      ssid: ssid && ssid !== '--' ? ssid : '',
+      ip,
+    });
+  } catch (error) {
+    res.status(500).json({ supported: false, error: error.message || 'WLAN-Status fehlgeschlagen.' });
+  }
+});
+
+app.get('/api/device/wifi/scan', async (_req, res) => {
+  try {
+    const raw = await runNmcli(['-t', '-f', 'ACTIVE,SSID,SIGNAL,SECURITY', 'device', 'wifi', 'list', '--rescan', 'yes']);
+    const dedup = new Map();
+    raw.split(/\r?\n/).filter(Boolean).forEach((line) => {
+      const [active, ssid, signal, security] = splitNmcliFields(line);
+      const cleanSsid = String(ssid || '').trim();
+      if (!cleanSsid) return;
+      const next = {
+        ssid: cleanSsid,
+        signal: Number(signal) || 0,
+        security: security || 'open',
+        active: active === 'yes',
+      };
+      const prev = dedup.get(cleanSsid);
+      if (!prev || next.signal > prev.signal || next.active) dedup.set(cleanSsid, next);
+    });
+    const networks = Array.from(dedup.values()).sort((a, b) => {
+      if (a.active !== b.active) return a.active ? -1 : 1;
+      return b.signal - a.signal;
+    });
+    res.json({ networks });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'WLAN-Scan fehlgeschlagen.' });
+  }
+});
+
+app.post('/api/device/wifi/connect', async (req, res) => {
+  const ssid = sanitizeText(req.body?.ssid || '', '').slice(0, 80);
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+  if (!ssid) return res.status(400).json({ error: 'SSID fehlt.' });
+  try {
+    const wifi = await getWifiInterface();
+    if (!wifi) return res.status(404).json({ error: 'Kein WLAN-Interface gefunden.' });
+    const args = ['device', 'wifi', 'connect', ssid, 'ifname', wifi.device];
+    if (password) args.push('password', password);
+    const out = await runNmcli(args);
+    res.json({ ok: true, message: out || `Verbunden mit ${ssid}.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'WLAN-Verbindung fehlgeschlagen.' });
+  }
+});
 
 // POST /api/sensors/ingest  — the Pi pushes here.
 // Body: { temperature, humidity, eco2, tvoc, aqi, updatedAt, error? }

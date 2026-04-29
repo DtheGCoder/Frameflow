@@ -33,6 +33,14 @@ const elements = {
   editPreviewMeta: document.getElementById('editPreviewMeta'),
   editDeleteButton: document.getElementById('editDeleteButton'),
   editMessage: document.getElementById('editMessage'),
+  wifiStatusLine: document.getElementById('wifiStatusLine'),
+  wifiScanBtn: document.getElementById('wifiScanBtn'),
+  wifiRefreshBtn: document.getElementById('wifiRefreshBtn'),
+  wifiConnectBtn: document.getElementById('wifiConnectBtn'),
+  wifiSsidInput: document.getElementById('wifiSsidInput'),
+  wifiPasswordInput: document.getElementById('wifiPasswordInput'),
+  wifiNetworkList: document.getElementById('wifiNetworkList'),
+  wifiMessage: document.getElementById('wifiMessage'),
 };
 
 let currentState = { slides: [], settings: {} };
@@ -420,6 +428,61 @@ async function loadState() {
   hydrate(state);
 }
 
+async function loadWifiStatus() {
+  if (!elements.wifiStatusLine) return;
+  try {
+    const status = await requestJson('/api/device/wifi/status');
+    if (!status.supported) {
+      elements.wifiStatusLine.textContent = 'WLAN-Steuerung nicht verfügbar (kein NetworkManager).';
+      return;
+    }
+    const state = status.state || 'unknown';
+    const ssid = status.ssid || 'nicht verbunden';
+    const ip = status.ip || 'keine IP';
+    elements.wifiStatusLine.textContent = `Interface ${status.device}: ${state} · SSID: ${ssid} · IP: ${ip}`;
+  } catch (e) {
+    elements.wifiStatusLine.textContent = `WLAN-Status fehlgeschlagen: ${e.message}`;
+  }
+}
+
+async function scanWifiNetworks() {
+  if (!elements.wifiNetworkList) return;
+  try {
+    const payload = await requestJson('/api/device/wifi/scan');
+    const networks = Array.isArray(payload.networks) ? payload.networks : [];
+    elements.wifiNetworkList.innerHTML = networks
+      .map((n) => `<option value="${escapeHtml(n.ssid)}"></option>`)
+      .join('');
+    if (!elements.wifiSsidInput.value && networks[0]?.ssid) {
+      elements.wifiSsidInput.value = networks[0].ssid;
+    }
+    flashMessage(elements.wifiMessage, `${networks.length} Netzwerke gefunden.`);
+  } catch (e) {
+    flashMessage(elements.wifiMessage, e.message, true);
+  }
+}
+
+async function connectWifi() {
+  const ssid = (elements.wifiSsidInput?.value || '').trim();
+  const password = elements.wifiPasswordInput?.value || '';
+  if (!ssid) {
+    flashMessage(elements.wifiMessage, 'Bitte SSID eingeben.', true);
+    return;
+  }
+  try {
+    await requestJson('/api/device/wifi/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ssid, password }),
+    });
+    flashMessage(elements.wifiMessage, `Verbinde mit ${ssid}…`);
+    if (elements.wifiPasswordInput) elements.wifiPasswordInput.value = '';
+    await loadWifiStatus();
+  } catch (e) {
+    flashMessage(elements.wifiMessage, e.message, true);
+  }
+}
+
 // ---------- events ----------
 socket.on('connect', () => setConnectionState(true));
 socket.on('disconnect', () => setConnectionState(false));
@@ -446,6 +509,9 @@ elements.editForm.addEventListener('change', refreshEditPreview);
 
 elements.uploadForm.addEventListener('submit', handleUploadSubmit);
 elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
+if (elements.wifiScanBtn) elements.wifiScanBtn.addEventListener('click', scanWifiNetworks);
+if (elements.wifiRefreshBtn) elements.wifiRefreshBtn.addEventListener('click', loadWifiStatus);
+if (elements.wifiConnectBtn) elements.wifiConnectBtn.addEventListener('click', connectWifi);
 
 // ---------- Live Frame UI-Scales ----------
 (function initFrameUiScales() {
@@ -543,3 +609,5 @@ elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
 syncRangeInputs(elements.uploadForm);
 refreshUploadPreview();
 loadState().catch((e) => flashMessage(elements.settingsMessage, e.message, true));
+loadWifiStatus();
+scanWifiNetworks();

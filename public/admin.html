@@ -392,6 +392,32 @@
               </label>
             </div>
           </div>
+
+          <div class="admin-ui-scales" style="margin-top:1rem;padding:1rem 1.1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;display:flex;flex-direction:column;gap:0.7rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.6rem;flex-wrap:wrap">
+              <strong style="font-size:0.95rem">WLAN am Frame</strong>
+              <button type="button" id="wifiRefreshBtn" class="admin-ghost-btn" style="padding:0.35rem 0.65rem">Neu laden</button>
+            </div>
+            <div id="wifiStatusLine" style="font-size:0.82rem;opacity:0.9">Status wird geladen…</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:0.6rem;align-items:end">
+              <label class="admin-field" style="margin:0">
+                <span>Netzwerk (SSID)</span>
+                <input id="wifiSsidInput" type="text" maxlength="80" list="wifiNetworkList" placeholder="WLAN auswählen oder eingeben" />
+                <datalist id="wifiNetworkList"></datalist>
+              </label>
+              <button type="button" id="wifiScanBtn" class="admin-ghost-btn" style="height:2.5rem">Scannen</button>
+            </div>
+            <label class="admin-field" style="margin:0">
+              <span>Passwort (leer bei offenem WLAN)</span>
+              <input id="wifiPasswordInput" type="password" maxlength="128" autocomplete="current-password" placeholder="WLAN Passwort" />
+            </label>
+            <div class="admin-actions-row" style="margin-top:0.2rem">
+              <button type="button" id="wifiConnectBtn" class="admin-primary-btn">
+                <svg><use href="#i-check"/></svg> Mit WLAN verbinden
+              </button>
+            </div>
+            <p id="wifiMessage" class="admin-inline-message"></p>
+          </div>
         </div>
       </section>
     </div>

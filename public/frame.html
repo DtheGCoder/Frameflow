@@ -26,6 +26,17 @@
       /* Stabile Breiten fuer Temp/Feuchte, damit das Layout nicht zappelt */
       #frameSensorTemp{min-width:2.6rem;display:inline-block;text-align:right}
       #frameSensorHum{min-width:2.4rem;display:inline-block;text-align:right}
+      /* Kompakter Kalender im Frame-View */
+      .frame-stage[data-view="calendar"] .frame-cal-topbar{padding:0.55rem 0.9rem !important;gap:0.6rem !important}
+      .frame-stage[data-view="calendar"] .cal-eyebrow{font-size:0.58rem !important;letter-spacing:0.12em !important}
+      .frame-stage[data-view="calendar"] .frame-cal-title h2{font-size:clamp(0.95rem,1.5vw,1.2rem) !important;margin-top:0.05rem !important}
+      .frame-stage[data-view="calendar"] .cal-segmented{transform:scale(0.92);transform-origin:center top}
+      .frame-stage[data-view="calendar"] .cal-segmented button{padding:0.3rem 0.55rem !important;font-size:0.78rem !important}
+      .frame-stage[data-view="calendar"] .cal-pill-button{padding:0.42rem 0.72rem !important;font-size:0.78rem !important}
+      .frame-stage[data-view="calendar"] .cal-round-button,
+      .frame-stage[data-view="calendar"] .cal-primary-button.cal-icon-only{width:2rem !important;height:2rem !important}
+      .frame-stage[data-view="calendar"] .cal-week-head-cell strong{width:1.45rem !important;height:1.45rem !important;font-size:0.78rem !important}
+      .frame-stage[data-view="calendar"] .cal-month-grid{grid-auto-rows:minmax(2.6rem,1fr) !important}
     </style>
   </head>
   <body class="frame-shell">
