@@ -22,6 +22,8 @@ AUTOSTART_DIR="${AUTOSTART_DIR:-$TARGET_HOME/.config/autostart}"
 DESKTOP_FILE="$AUTOSTART_DIR/frameflow-kiosk.desktop"
 DISABLED_FILE="$AUTOSTART_DIR/frameflow-kiosk.desktop.disabled"
 KIOSK_SCRIPT="${KIOSK_SCRIPT:-$TARGET_HOME/.local/bin/frameflow-kiosk.sh}"
+DISPLAY_VAL="${FRAMEFLOW_KIOSK_DISPLAY:-:0}"
+XAUTH_FILE="${FRAMEFLOW_KIOSK_XAUTHORITY:-$TARGET_HOME/.Xauthority}"
 
 stop_now() {
   pkill -u "$TARGET_USER" -f "$KIOSK_SCRIPT" 2>/dev/null || true
@@ -34,10 +36,17 @@ start_now() {
     echo "Kiosk script fehlt: $KIOSK_SCRIPT" >&2
     exit 1
   fi
+  stop_now
+  sleep 1
   if [[ "$(id -un)" == "$TARGET_USER" ]]; then
-    nohup "$KIOSK_SCRIPT" >/tmp/frameflow-kiosk.out 2>/tmp/frameflow-kiosk.err &
+    DISPLAY="$DISPLAY_VAL" XAUTHORITY="$XAUTH_FILE" nohup "$KIOSK_SCRIPT" >/tmp/frameflow-kiosk.out 2>/tmp/frameflow-kiosk.err &
   else
-    runuser -u "$TARGET_USER" -- nohup "$KIOSK_SCRIPT" >/tmp/frameflow-kiosk.out 2>/tmp/frameflow-kiosk.err &
+    runuser -u "$TARGET_USER" -- bash -lc "DISPLAY='$DISPLAY_VAL' XAUTHORITY='$XAUTH_FILE' nohup '$KIOSK_SCRIPT' >/tmp/frameflow-kiosk.out 2>/tmp/frameflow-kiosk.err &"
+  fi
+  sleep 1
+  if ! pgrep -u "$TARGET_USER" -f "$KIOSK_SCRIPT" >/dev/null 2>&1; then
+    echo "Kiosk Start fehlgeschlagen. Prüfe /tmp/frameflow-kiosk.err" >&2
+    exit 1
   fi
 }
 
