@@ -938,6 +938,11 @@ document.querySelectorAll('dialog [data-close]').forEach((button) => {
 function handleSwipeStart(event) {
   if (!currentState.calendar.settings.swipeEnabled) return;
   if (document.querySelector('dialog[open]')) return;
+  // In calendar view, prioritize native vertical touch scrolling.
+  if (activeView === 'calendar') {
+    touchStart = null;
+    return;
+  }
   const point = event.touches ? event.touches[0] : event;
   touchStart = { x: point.clientX, y: point.clientY };
 }

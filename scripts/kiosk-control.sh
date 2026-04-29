@@ -2,15 +2,31 @@
 set -euo pipefail
 
 ACTION="${1:-status}"
-AUTOSTART_DIR="${AUTOSTART_DIR:-$HOME/.config/autostart}"
+TARGET_USER="${FRAMEFLOW_KIOSK_USER:-}"
+if [[ -z "$TARGET_USER" ]]; then
+  if [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+    TARGET_USER="$SUDO_USER"
+  elif getent passwd 1000 >/dev/null 2>&1; then
+    TARGET_USER="$(getent passwd 1000 | cut -d: -f1)"
+  else
+    TARGET_USER="$(id -un)"
+  fi
+fi
+
+TARGET_HOME="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
+if [[ -z "$TARGET_HOME" ]]; then
+  TARGET_HOME="$HOME"
+fi
+
+AUTOSTART_DIR="${AUTOSTART_DIR:-$TARGET_HOME/.config/autostart}"
 DESKTOP_FILE="$AUTOSTART_DIR/frameflow-kiosk.desktop"
 DISABLED_FILE="$AUTOSTART_DIR/frameflow-kiosk.desktop.disabled"
-KIOSK_SCRIPT="${KIOSK_SCRIPT:-$HOME/.local/bin/frameflow-kiosk.sh}"
+KIOSK_SCRIPT="${KIOSK_SCRIPT:-$TARGET_HOME/.local/bin/frameflow-kiosk.sh}"
 
 stop_now() {
-  pkill -f "$KIOSK_SCRIPT" 2>/dev/null || true
-  pkill -f 'chromium.*--kiosk' 2>/dev/null || true
-  pkill -f 'chromium-browser.*--kiosk' 2>/dev/null || true
+  pkill -u "$TARGET_USER" -f "$KIOSK_SCRIPT" 2>/dev/null || true
+  pkill -u "$TARGET_USER" -f 'chromium.*--kiosk' 2>/dev/null || true
+  pkill -u "$TARGET_USER" -f 'chromium-browser.*--kiosk' 2>/dev/null || true
 }
 
 start_now() {
@@ -18,7 +34,11 @@ start_now() {
     echo "Kiosk script fehlt: $KIOSK_SCRIPT" >&2
     exit 1
   fi
-  nohup "$KIOSK_SCRIPT" >/tmp/frameflow-kiosk.out 2>/tmp/frameflow-kiosk.err &
+  if [[ "$(id -un)" == "$TARGET_USER" ]]; then
+    nohup "$KIOSK_SCRIPT" >/tmp/frameflow-kiosk.out 2>/tmp/frameflow-kiosk.err &
+  else
+    runuser -u "$TARGET_USER" -- nohup "$KIOSK_SCRIPT" >/tmp/frameflow-kiosk.out 2>/tmp/frameflow-kiosk.err &
+  fi
 }
 
 case "$ACTION" in
@@ -53,7 +73,7 @@ case "$ACTION" in
     echo "Kiosk fortgesetzt (Autostart aktiv)"
     ;;
   status)
-    if pgrep -f "$KIOSK_SCRIPT" >/dev/null 2>&1; then
+    if pgrep -u "$TARGET_USER" -f "$KIOSK_SCRIPT" >/dev/null 2>&1; then
       echo "running"
     else
       echo "stopped"
