@@ -118,6 +118,8 @@ let slideshowTimer = null;
 let clockTimer = null;
 let activeView = 'photo';
 let touchStart = null;
+let dragScrollState = null;
+let suppressCalendarClickUntil = 0;
 let lastCalendarActivity = 0;
 let calendarReturnTimer = null;
 const CALENDAR_IDLE_SCROLL_MS = 8000;
@@ -847,6 +849,11 @@ frameCalendarMenu.addEventListener('click', () => { menuDialog.showModal(); mark
 
 // Click on calendar content: event edit / hour-slot create / month-cell drill
 frameCalendarContent.addEventListener('click', (event) => {
+  if (Date.now() < suppressCalendarClickUntil) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
   const eventButton = event.target.closest('[data-event-id]');
   if (eventButton) { openEventDialog({ eventId: eventButton.dataset.eventId }); return; }
   const slot = event.target.closest('.cal-hour-slot');
@@ -938,23 +945,53 @@ document.querySelectorAll('dialog [data-close]').forEach((button) => {
 function handleSwipeStart(event) {
   if (!currentState.calendar.settings.swipeEnabled) return;
   if (document.querySelector('dialog[open]')) return;
-  // In calendar view, prioritize native vertical touch scrolling.
-  if (activeView === 'calendar') {
-    touchStart = null;
-    return;
-  }
   const point = event.touches ? event.touches[0] : event;
-  touchStart = { x: point.clientX, y: point.clientY };
+  touchStart = { x: point.clientX, y: point.clientY, view: activeView };
 }
 function handleSwipeEnd(event) {
   if (!touchStart || !currentState.calendar.settings.swipeEnabled) { touchStart = null; return; }
   const point = event.changedTouches ? event.changedTouches[0] : event;
   const deltaX = point.clientX - touchStart.x;
   const deltaY = point.clientY - touchStart.y;
+  const startedView = touchStart.view;
   touchStart = null;
-  if (Math.abs(deltaX) < 80 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+  const absX = Math.abs(deltaX);
+  const absY = Math.abs(deltaY);
+  // In calendar mode we require a clearer horizontal gesture so vertical scrolling is not disturbed.
+  const minX = startedView === 'calendar' ? 110 : 80;
+  const dominance = startedView === 'calendar' ? 1.35 : 1.0;
+  if (absX < minX || absX < absY * dominance) return;
   if (deltaX < 0) setActiveView('calendar', 'left');
   else setActiveView('photo', 'right');
+}
+
+function isInteractiveCalendarTarget(target) {
+  return Boolean(target.closest('button, a, input, textarea, select, dialog, [contenteditable="true"]'));
+}
+
+function handleCalendarMouseDragStart(event) {
+  if (activeView !== 'calendar') return;
+  if (event.button !== 0) return;
+  if (isInteractiveCalendarTarget(event.target)) return;
+  dragScrollState = {
+    startY: event.clientY,
+    startScrollTop: frameCalendarSurface.scrollTop,
+    moved: false,
+  };
+}
+
+function handleCalendarMouseDragMove(event) {
+  if (!dragScrollState || activeView !== 'calendar') return;
+  const deltaY = event.clientY - dragScrollState.startY;
+  if (Math.abs(deltaY) > 4) dragScrollState.moved = true;
+  frameCalendarSurface.scrollTop = dragScrollState.startScrollTop - deltaY;
+  markCalendarActivity();
+}
+
+function handleCalendarMouseDragEnd() {
+  if (!dragScrollState) return;
+  if (dragScrollState.moved) suppressCalendarClickUntil = Date.now() + 220;
+  dragScrollState = null;
 }
 
 setActiveView('photo');
@@ -963,6 +1000,12 @@ window.addEventListener('touchstart', handleSwipeStart, { passive: true });
 window.addEventListener('touchend', handleSwipeEnd, { passive: true });
 window.addEventListener('mousedown', handleSwipeStart);
 window.addEventListener('mouseup', handleSwipeEnd);
+
+// Fallback for USB touchscreens that expose drag as mouse movement instead of native touch scrolling.
+frameCalendarSurface.addEventListener('mousedown', handleCalendarMouseDragStart);
+window.addEventListener('mousemove', handleCalendarMouseDragMove);
+window.addEventListener('mouseup', handleCalendarMouseDragEnd);
+window.addEventListener('mouseleave', handleCalendarMouseDragEnd);
 
 // Activity listeners inside calendar
 ['wheel', 'touchstart', 'touchmove', 'mousedown', 'keydown', 'scroll'].forEach((eventName) => {
