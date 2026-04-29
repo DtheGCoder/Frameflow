@@ -12,9 +12,7 @@ PI_AGENT_BIND="${PI_AGENT_BIND:-0.0.0.0}"
 PI_AGENT_TOKEN="${PI_AGENT_TOKEN:-}"
 
 if [[ -z "$PI_AGENT_TOKEN" ]]; then
-  echo "Missing PI_AGENT_TOKEN. Example:" >&2
-  echo "  sudo PI_AGENT_TOKEN=<long-random-token> bash scripts/setup-pi-agent.sh" >&2
-  exit 1
+  echo "WARN: PI_AGENT_TOKEN is empty. Agent will accept unauthenticated LAN requests." >&2
 fi
 
 if [[ ! -f "$APP_DIR/scripts/pi-agent.py" ]]; then

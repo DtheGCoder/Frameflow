@@ -484,12 +484,12 @@ function runShell(command, timeout = 30000) {
 }
 
 function hasPiAgentProxy() {
-  return Boolean(PI_AGENT_URL && PI_AGENT_TOKEN);
+  return Boolean(PI_AGENT_URL);
 }
 
 async function callPiAgent(pathname, method = 'GET', body = undefined) {
   if (!hasPiAgentProxy()) {
-    throw new Error('Pi agent proxy is not configured. Set FRAMEFLOW_PI_AGENT_URL and FRAMEFLOW_PI_AGENT_TOKEN.');
+    throw new Error('Pi agent proxy is not configured. Set FRAMEFLOW_PI_AGENT_URL.');
   }
   if (typeof fetch !== 'function') {
     throw new Error('fetch unavailable (Node < 18)');
@@ -497,13 +497,16 @@ async function callPiAgent(pathname, method = 'GET', body = undefined) {
   const ctrl = new AbortController();
   const timeout = setTimeout(() => ctrl.abort(), 12000);
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (PI_AGENT_TOKEN) {
+      headers['X-Frameflow-Token'] = PI_AGENT_TOKEN;
+    }
     const response = await fetch(`${PI_AGENT_URL}${pathname}`, {
       method,
       signal: ctrl.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Frameflow-Token': PI_AGENT_TOKEN,
-      },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     const payload = await response.json().catch(() => ({}));
