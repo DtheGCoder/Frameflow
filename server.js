@@ -18,6 +18,7 @@ const io = new Server(server, {
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const APP_BUILD = String(Date.now());
+const FRAMEFLOW_APP_DIR = process.env.FRAMEFLOW_APP_DIR || '/opt/frameflow';
 const ROOT_DIR = __dirname;
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
@@ -503,7 +504,7 @@ let autoUpdateTimer = null;
 
 async function runAutoUpdateCycle() {
   try {
-    const { stdout } = await runShell('cd /opt/frameflow && sudo -n git pull --ff-only && sudo -n systemctl restart frameflow', 120000);
+    const { stdout } = await runShell(`sudo -n /usr/bin/git -C ${FRAMEFLOW_APP_DIR} pull --ff-only && sudo -n /usr/bin/systemctl restart frameflow`, 120000);
     console.log('[auto-update]', stdout || 'ok');
   } catch (error) {
     console.warn('[auto-update] failed:', error.message || error);
@@ -705,43 +706,51 @@ app.post('/api/device/maintenance/action', async (req, res) => {
   const action = sanitizeShortText(req.body?.action || '', '');
   const actions = {
     frameflowRestart: {
-      command: 'sudo -n systemctl restart frameflow',
+      command: 'sudo -n /usr/bin/systemctl restart frameflow',
       timeout: 30000,
     },
     frameflowStop: {
-      command: 'sudo -n systemctl stop frameflow',
+      command: 'sudo -n /usr/bin/systemctl stop frameflow',
       timeout: 30000,
     },
     frameflowStart: {
-      command: 'sudo -n systemctl start frameflow',
+      command: 'sudo -n /usr/bin/systemctl start frameflow',
       timeout: 30000,
     },
     kioskStart: {
-      command: 'systemctl --user start frameflow-kiosk.service',
+      command: `${FRAMEFLOW_APP_DIR}/scripts/kiosk-control.sh start`,
       timeout: 30000,
     },
     kioskStop: {
-      command: 'systemctl --user stop frameflow-kiosk.service',
+      command: `${FRAMEFLOW_APP_DIR}/scripts/kiosk-control.sh stop`,
       timeout: 30000,
     },
     kioskRestart: {
-      command: 'systemctl --user restart frameflow-kiosk.service',
+      command: `${FRAMEFLOW_APP_DIR}/scripts/kiosk-control.sh restart`,
+      timeout: 30000,
+    },
+    kioskPause: {
+      command: `${FRAMEFLOW_APP_DIR}/scripts/kiosk-control.sh pause`,
+      timeout: 30000,
+    },
+    kioskResume: {
+      command: `${FRAMEFLOW_APP_DIR}/scripts/kiosk-control.sh resume`,
       timeout: 30000,
     },
     pullUpdate: {
-      command: 'cd /opt/frameflow && sudo -n git pull --ff-only',
+      command: `sudo -n /usr/bin/git -C ${FRAMEFLOW_APP_DIR} pull --ff-only`,
       timeout: 120000,
     },
     fullUpdate: {
-      command: 'cd /opt/frameflow && sudo -n git pull --ff-only && sudo -n npm install --omit=dev && sudo -n systemctl restart frameflow',
+      command: `sudo -n /usr/bin/git -C ${FRAMEFLOW_APP_DIR} pull --ff-only && sudo -n /usr/bin/npm --prefix ${FRAMEFLOW_APP_DIR} install --omit=dev && sudo -n /usr/bin/systemctl restart frameflow`,
       timeout: 180000,
     },
     setupKiosk: {
-      command: 'cd /opt/frameflow && bash scripts/setup-kiosk.sh',
+      command: `cd ${FRAMEFLOW_APP_DIR} && bash scripts/setup-kiosk.sh`,
       timeout: 180000,
     },
     rebootHost: {
-      command: 'sudo -n reboot',
+      command: 'sudo -n /usr/sbin/reboot',
       timeout: 10000,
     },
   };
