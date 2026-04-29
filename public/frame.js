@@ -109,6 +109,7 @@ let currentState = {
     events: [],
   },
 };
+let appBuildId = null;
 
 let activeLayer = primaryLayer;
 let passiveLayer = secondaryLayer;
@@ -569,6 +570,11 @@ function updateClock() {
 // ---------- state ----------
 
 function applyState(state) {
+  if (state.appBuild && appBuildId && state.appBuild !== appBuildId) {
+    window.location.replace(`${window.location.pathname}?v=${Date.now()}`);
+    return;
+  }
+  if (state.appBuild) appBuildId = state.appBuild;
   const prevIds = currentState.slides.map((s) => s && s.id).filter(Boolean).sort().join('|');
   const incomingSlides = state.slides || [];
   const nextIds = incomingSlides.map((s) => s && s.id).filter(Boolean).sort().join('|');

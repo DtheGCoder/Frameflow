@@ -17,6 +17,7 @@ const io = new Server(server, {
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
+const APP_BUILD = String(Date.now());
 const ROOT_DIR = __dirname;
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
@@ -268,6 +269,7 @@ function serializeState(state) {
     settings: state.settings,
     calendar: serializeCalendar(state.calendar),
     updatedAt: state.updatedAt,
+    appBuild: APP_BUILD,
   };
 }
 
@@ -350,7 +352,15 @@ function createSlideFromUpload(file, body, order) {
 
 app.use(express.json({ limit: '1mb' }));
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
-app.use('/static', express.static(path.join(ROOT_DIR, 'public'), { maxAge: '1h' }));
+app.use('/static', express.static(path.join(ROOT_DIR, 'public'), {
+  maxAge: 0,
+  etag: false,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  },
+}));
 
 app.get('/', (_req, res) => {
   res.sendFile(path.join(ROOT_DIR, 'public', 'admin.html'));
@@ -465,6 +475,21 @@ async function getWifiInterface() {
   };
 }
 
+async function getSavedWifiConnections() {
+  const raw = await runNmcli(['-t', '-f', 'NAME,TYPE,AUTOCONNECT,ACTIVE,DEVICE', 'connection', 'show']);
+  return raw.split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => splitNmcliFields(line))
+    .filter((parts) => parts[1] === 'wifi' && parts[0])
+    .map((parts) => ({
+      name: parts[0],
+      ssid: parts[0],
+      autoconnect: parts[2] === 'yes',
+      active: parts[3] === 'yes',
+      device: parts[4] || '',
+    }));
+}
+
 // Wi-Fi management for kiosk devices (Linux + NetworkManager).
 app.get('/api/device/wifi/status', async (_req, res) => {
   try {
@@ -521,6 +546,49 @@ app.get('/api/device/wifi/scan', async (_req, res) => {
   }
 });
 
+app.get('/api/device/wifi/saved', async (_req, res) => {
+  try {
+    const connections = await getSavedWifiConnections();
+    res.json({ connections });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Gespeicherte WLANs konnten nicht geladen werden.' });
+  }
+});
+
+app.post('/api/device/wifi/auto-connect', async (_req, res) => {
+  try {
+    const wifi = await getWifiInterface();
+    if (!wifi) return res.status(404).json({ error: 'Kein WLAN-Interface gefunden.' });
+    const [saved, scanRaw] = await Promise.all([
+      getSavedWifiConnections(),
+      runNmcli(['-t', '-f', 'ACTIVE,SSID,SIGNAL,SECURITY', 'device', 'wifi', 'list', '--rescan', 'yes']),
+    ]);
+    const bySsid = new Map(saved.map((entry) => [entry.ssid.toLowerCase(), entry]));
+    const visible = scanRaw.split(/\r?\n/)
+      .filter(Boolean)
+      .map((line) => splitNmcliFields(line))
+      .map((parts) => ({
+        active: parts[0] === 'yes',
+        ssid: String(parts[1] || '').trim(),
+        signal: Number(parts[2]) || 0,
+      }))
+      .filter((entry) => entry.ssid && bySsid.has(entry.ssid.toLowerCase()));
+    if (!visible.length) {
+      return res.json({ ok: false, message: 'Kein bekanntes WLAN in Reichweite.' });
+    }
+    visible.sort((a, b) => {
+      if (a.active !== b.active) return a.active ? -1 : 1;
+      return b.signal - a.signal;
+    });
+    const target = visible[0];
+    const profile = bySsid.get(target.ssid.toLowerCase());
+    await runNmcli(['connection', 'up', 'id', profile.name, 'ifname', wifi.device]);
+    res.json({ ok: true, ssid: target.ssid, message: `Automatisch verbunden: ${target.ssid}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Automatisches Verbinden fehlgeschlagen.' });
+  }
+});
+
 app.post('/api/device/wifi/connect', async (req, res) => {
   const ssid = sanitizeText(req.body?.ssid || '', '').slice(0, 80);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
@@ -528,9 +596,16 @@ app.post('/api/device/wifi/connect', async (req, res) => {
   try {
     const wifi = await getWifiInterface();
     if (!wifi) return res.status(404).json({ error: 'Kein WLAN-Interface gefunden.' });
-    const args = ['device', 'wifi', 'connect', ssid, 'ifname', wifi.device];
-    if (password) args.push('password', password);
-    const out = await runNmcli(args);
+    const saved = await getSavedWifiConnections();
+    const known = saved.find((entry) => entry.ssid.toLowerCase() === ssid.toLowerCase());
+    let out = '';
+    if (known && !password) {
+      out = await runNmcli(['connection', 'up', 'id', known.name, 'ifname', wifi.device]);
+    } else {
+      const args = ['device', 'wifi', 'connect', ssid, 'ifname', wifi.device];
+      if (password) args.push('password', password);
+      out = await runNmcli(args);
+    }
     res.json({ ok: true, message: out || `Verbunden mit ${ssid}.` });
   } catch (error) {
     res.status(500).json({ error: error.message || 'WLAN-Verbindung fehlgeschlagen.' });

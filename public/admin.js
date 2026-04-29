@@ -36,16 +36,22 @@ const elements = {
   wifiStatusLine: document.getElementById('wifiStatusLine'),
   wifiScanBtn: document.getElementById('wifiScanBtn'),
   wifiRefreshBtn: document.getElementById('wifiRefreshBtn'),
+  wifiAutoConnectBtn: document.getElementById('wifiAutoConnectBtn'),
   wifiConnectBtn: document.getElementById('wifiConnectBtn'),
   wifiSsidInput: document.getElementById('wifiSsidInput'),
   wifiPasswordInput: document.getElementById('wifiPasswordInput'),
   wifiNetworkList: document.getElementById('wifiNetworkList'),
+  wifiSavedList: document.getElementById('wifiSavedList'),
   wifiMessage: document.getElementById('wifiMessage'),
 };
 
 let currentState = { slides: [], settings: {} };
 let previewUrl = '';
 let editingSlideId = null;
+let appBuildId = null;
+const settingsTouchedAt = {};
+let settingsDebounceTimer = null;
+let settingsSaveInFlight = false;
 
 // ---------- helpers ----------
 function formatRangeValue(input) {
@@ -194,20 +200,65 @@ function onImagePicked(files) {
 // ---------- stats + settings ----------
 function populateSettings(settings) {
   const f = elements.settingsForm;
-  f.frameName.value = settings.frameName || '';
-  f.durationMs.value = settings.durationMs || 8000;
-  f.transitionMs.value = settings.transitionMs || 1400;
-  f.fitMode.value = settings.fitMode || 'cover';
-  f.overlayTheme.value = settings.overlayTheme || 'glass';
-  f.accent.value = settings.accent || '#f97316';
-  f.backgroundStyle.value = settings.backgroundStyle || 'aurora';
-  f.shuffle.checked = !!settings.shuffle;
-  f.motion.checked = !!settings.motion;
-  f.showClock.checked = !!settings.showClock;
-  f.showSlideInfo.checked = settings.showSlideInfo !== false;
-  f.showCounter.checked = settings.showCounter !== false;
-  if (f.weatherLocation) f.weatherLocation.value = settings.weatherLocation || '';
-  if (f.showWeather) f.showWeather.checked = settings.showWeather !== false;
+  const isLocked = (name) => settingsTouchedAt[name] && Date.now() - settingsTouchedAt[name] < 1800;
+  if (!isLocked('frameName')) f.frameName.value = settings.frameName || '';
+  if (!isLocked('durationMs')) f.durationMs.value = settings.durationMs || 8000;
+  if (!isLocked('transitionMs')) f.transitionMs.value = settings.transitionMs || 1400;
+  if (!isLocked('fitMode')) f.fitMode.value = settings.fitMode || 'cover';
+  if (!isLocked('overlayTheme')) f.overlayTheme.value = settings.overlayTheme || 'glass';
+  if (!isLocked('accent')) f.accent.value = settings.accent || '#f97316';
+  if (!isLocked('backgroundStyle')) f.backgroundStyle.value = settings.backgroundStyle || 'aurora';
+  if (!isLocked('shuffle')) f.shuffle.checked = !!settings.shuffle;
+  if (!isLocked('motion')) f.motion.checked = !!settings.motion;
+  if (!isLocked('showClock')) f.showClock.checked = !!settings.showClock;
+  if (!isLocked('showSlideInfo')) f.showSlideInfo.checked = settings.showSlideInfo !== false;
+  if (!isLocked('showCounter')) f.showCounter.checked = settings.showCounter !== false;
+  if (f.weatherLocation && !isLocked('weatherLocation')) f.weatherLocation.value = settings.weatherLocation || '';
+  if (f.showWeather && !isLocked('showWeather')) f.showWeather.checked = settings.showWeather !== false;
+}
+
+function collectSettingsPayload() {
+  const f = elements.settingsForm;
+  return {
+    frameName: f.frameName.value,
+    durationMs: Number(f.durationMs.value),
+    transitionMs: Number(f.transitionMs.value),
+    fitMode: f.fitMode.value,
+    overlayTheme: f.overlayTheme.value,
+    accent: f.accent.value,
+    backgroundStyle: f.backgroundStyle.value,
+    shuffle: f.shuffle.checked,
+    motion: f.motion.checked,
+    showClock: f.showClock.checked,
+    showSlideInfo: f.showSlideInfo.checked,
+    showCounter: f.showCounter.checked,
+    weatherLocation: f.weatherLocation ? f.weatherLocation.value : '',
+    showWeather: f.showWeather ? f.showWeather.checked : true,
+  };
+}
+
+async function saveSettingsNow(showToast = false) {
+  if (settingsSaveInFlight) return;
+  settingsSaveInFlight = true;
+  const payload = collectSettingsPayload();
+  try {
+    await requestJson('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (currentState && currentState.settings) Object.assign(currentState.settings, payload);
+    if (showToast) flashMessage(elements.settingsMessage, 'Einstellungen gespeichert.');
+  } catch (e) {
+    flashMessage(elements.settingsMessage, e.message, true);
+  } finally {
+    settingsSaveInFlight = false;
+  }
+}
+
+function queueLiveSettingsSave() {
+  clearTimeout(settingsDebounceTimer);
+  settingsDebounceTimer = setTimeout(() => saveSettingsNow(false), 220);
 }
 
 function updateStats(state) {
@@ -378,36 +429,17 @@ async function handleSettingsSubmit(event) {
   if (typeof window.__flushFrameUiScales === 'function') {
     await window.__flushFrameUiScales();
   }
-  const f = elements.settingsForm;
-  const payload = {
-    frameName: f.frameName.value,
-    durationMs: Number(f.durationMs.value),
-    transitionMs: Number(f.transitionMs.value),
-    fitMode: f.fitMode.value,
-    overlayTheme: f.overlayTheme.value,
-    accent: f.accent.value,
-    backgroundStyle: f.backgroundStyle.value,
-    shuffle: f.shuffle.checked,
-    motion: f.motion.checked,
-    showClock: f.showClock.checked,
-    showSlideInfo: f.showSlideInfo.checked,
-    showCounter: f.showCounter.checked,
-    weatherLocation: f.weatherLocation ? f.weatherLocation.value : '',
-    showWeather: f.showWeather ? f.showWeather.checked : true,
-  };
-  try {
-    await requestJson('/api/settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    flashMessage(elements.settingsMessage, 'Einstellungen gespeichert.');
-    await loadState();
-  } catch (e) { flashMessage(elements.settingsMessage, e.message, true); }
+  await saveSettingsNow(true);
+  await loadState();
 }
 
 // ---------- state ----------
 function hydrate(state) {
+  if (state.appBuild && appBuildId && state.appBuild !== appBuildId) {
+    window.location.replace(`${window.location.pathname}?v=${Date.now()}`);
+    return;
+  }
+  if (state.appBuild) appBuildId = state.appBuild;
   currentState = state;
   populateSettings(state.settings);
   if (typeof window.__populateFrameUiScales === 'function') {
@@ -445,6 +477,44 @@ async function loadWifiStatus() {
   }
 }
 
+function renderSavedWifi(connections) {
+  if (!elements.wifiSavedList) return;
+  const list = Array.isArray(connections) ? connections : [];
+  if (!list.length) {
+    elements.wifiSavedList.innerHTML = '<small style="opacity:.7">Keine gespeicherten WLANs</small>';
+    return;
+  }
+  elements.wifiSavedList.innerHTML = list.map((entry) => {
+    const activeStyle = entry.active ? 'background:rgba(16,185,129,.2);border-color:rgba(16,185,129,.5)' : '';
+    return `<button type="button" class="admin-ghost-btn" data-wifi-ssid="${escapeHtml(entry.ssid)}" style="padding:0.3rem 0.55rem;${activeStyle}">${escapeHtml(entry.ssid)}</button>`;
+  }).join('');
+}
+
+async function loadSavedWifi() {
+  if (!elements.wifiSavedList) return;
+  try {
+    const payload = await requestJson('/api/device/wifi/saved');
+    renderSavedWifi(payload.connections || []);
+  } catch (e) {
+    elements.wifiSavedList.innerHTML = `<small style="opacity:.7">${escapeHtml(e.message)}</small>`;
+  }
+}
+
+async function autoConnectWifi(showToast = true) {
+  try {
+    const payload = await requestJson('/api/device/wifi/auto-connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    if (showToast && payload.message) flashMessage(elements.wifiMessage, payload.message);
+    await loadWifiStatus();
+    await loadSavedWifi();
+  } catch (e) {
+    if (showToast) flashMessage(elements.wifiMessage, e.message, true);
+  }
+}
+
 async function scanWifiNetworks() {
   if (!elements.wifiNetworkList) return;
   try {
@@ -457,6 +527,7 @@ async function scanWifiNetworks() {
       elements.wifiSsidInput.value = networks[0].ssid;
     }
     flashMessage(elements.wifiMessage, `${networks.length} Netzwerke gefunden.`);
+    await loadSavedWifi();
   } catch (e) {
     flashMessage(elements.wifiMessage, e.message, true);
   }
@@ -478,6 +549,7 @@ async function connectWifi() {
     flashMessage(elements.wifiMessage, `Verbinde mit ${ssid}…`);
     if (elements.wifiPasswordInput) elements.wifiPasswordInput.value = '';
     await loadWifiStatus();
+    await loadSavedWifi();
   } catch (e) {
     flashMessage(elements.wifiMessage, e.message, true);
   }
@@ -509,9 +581,32 @@ elements.editForm.addEventListener('change', refreshEditPreview);
 
 elements.uploadForm.addEventListener('submit', handleUploadSubmit);
 elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
+elements.settingsForm.addEventListener('input', (event) => {
+  const name = event.target && event.target.name;
+  if (!name) return;
+  settingsTouchedAt[name] = Date.now();
+  queueLiveSettingsSave();
+});
+elements.settingsForm.addEventListener('change', (event) => {
+  const name = event.target && event.target.name;
+  if (!name) return;
+  settingsTouchedAt[name] = Date.now();
+  queueLiveSettingsSave();
+});
 if (elements.wifiScanBtn) elements.wifiScanBtn.addEventListener('click', scanWifiNetworks);
 if (elements.wifiRefreshBtn) elements.wifiRefreshBtn.addEventListener('click', loadWifiStatus);
+if (elements.wifiAutoConnectBtn) elements.wifiAutoConnectBtn.addEventListener('click', () => autoConnectWifi(true));
 if (elements.wifiConnectBtn) elements.wifiConnectBtn.addEventListener('click', connectWifi);
+if (elements.wifiSavedList) {
+  elements.wifiSavedList.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-wifi-ssid]');
+    if (!button) return;
+    const ssid = button.dataset.wifiSsid || '';
+    if (elements.wifiSsidInput) elements.wifiSsidInput.value = ssid;
+    if (elements.wifiPasswordInput) elements.wifiPasswordInput.value = '';
+    connectWifi();
+  });
+}
 
 // ---------- Live Frame UI-Scales ----------
 (function initFrameUiScales() {
@@ -611,3 +706,5 @@ refreshUploadPreview();
 loadState().catch((e) => flashMessage(elements.settingsMessage, e.message, true));
 loadWifiStatus();
 scanWifiNetworks();
+loadSavedWifi();
+autoConnectWifi(false);
