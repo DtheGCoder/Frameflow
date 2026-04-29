@@ -994,21 +994,58 @@ function handleCalendarMouseDragEnd() {
   dragScrollState = null;
 }
 
+function handleSwipePointerStart(event) {
+  if (!event.isPrimary) return;
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  handleSwipeStart(event);
+}
+
+function handleSwipePointerEnd(event) {
+  if (!event.isPrimary) return;
+  handleSwipeEnd(event);
+}
+
+function handleCalendarPointerDragStart(event) {
+  if (!event.isPrimary) return;
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  handleCalendarMouseDragStart(event);
+}
+
+function handleCalendarPointerDragMove(event) {
+  if (!event.isPrimary) return;
+  handleCalendarMouseDragMove(event);
+}
+
+function handleCalendarPointerDragEnd(event) {
+  if (!event.isPrimary) return;
+  handleCalendarMouseDragEnd();
+}
+
 setActiveView('photo');
 
-window.addEventListener('touchstart', handleSwipeStart, { passive: true });
-window.addEventListener('touchend', handleSwipeEnd, { passive: true });
-window.addEventListener('mousedown', handleSwipeStart);
-window.addEventListener('mouseup', handleSwipeEnd);
+if (window.PointerEvent) {
+  window.addEventListener('pointerdown', handleSwipePointerStart, { passive: true });
+  window.addEventListener('pointerup', handleSwipePointerEnd, { passive: true });
 
-// Fallback for USB touchscreens that expose drag as mouse movement instead of native touch scrolling.
-frameCalendarSurface.addEventListener('mousedown', handleCalendarMouseDragStart);
-window.addEventListener('mousemove', handleCalendarMouseDragMove);
-window.addEventListener('mouseup', handleCalendarMouseDragEnd);
-window.addEventListener('mouseleave', handleCalendarMouseDragEnd);
+  // Fallback drag-scroll for pointer devices that do not perform native touch scrolling in kiosk mode.
+  frameCalendarSurface.addEventListener('pointerdown', handleCalendarPointerDragStart, { passive: true });
+  window.addEventListener('pointermove', handleCalendarPointerDragMove, { passive: true });
+  window.addEventListener('pointerup', handleCalendarPointerDragEnd, { passive: true });
+  window.addEventListener('pointercancel', handleCalendarPointerDragEnd, { passive: true });
+} else {
+  window.addEventListener('touchstart', handleSwipeStart, { passive: true });
+  window.addEventListener('touchend', handleSwipeEnd, { passive: true });
+  window.addEventListener('mousedown', handleSwipeStart);
+  window.addEventListener('mouseup', handleSwipeEnd);
+
+  frameCalendarSurface.addEventListener('mousedown', handleCalendarMouseDragStart);
+  window.addEventListener('mousemove', handleCalendarMouseDragMove);
+  window.addEventListener('mouseup', handleCalendarMouseDragEnd);
+  window.addEventListener('mouseleave', handleCalendarMouseDragEnd);
+}
 
 // Activity listeners inside calendar
-['wheel', 'touchstart', 'touchmove', 'mousedown', 'keydown', 'scroll'].forEach((eventName) => {
+['wheel', 'touchstart', 'touchmove', 'pointerdown', 'pointermove', 'mousedown', 'keydown', 'scroll'].forEach((eventName) => {
   frameCalendarSurface.addEventListener(eventName, markCalendarActivity, { passive: true });
 });
 frameCalendarView.addEventListener('click', markCalendarActivity);
