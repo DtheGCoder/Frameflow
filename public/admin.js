@@ -43,6 +43,14 @@ const elements = {
   wifiNetworkList: document.getElementById('wifiNetworkList'),
   wifiSavedList: document.getElementById('wifiSavedList'),
   wifiMessage: document.getElementById('wifiMessage'),
+  maintRefreshBtn: document.getElementById('maintRefreshBtn'),
+  maintStatusLine: document.getElementById('maintStatusLine'),
+  maintMessage: document.getElementById('maintMessage'),
+  maintOutput: document.getElementById('maintOutput'),
+  maintActionButtons: Array.from(document.querySelectorAll('[data-maint-action]')),
+  autoUpdateEnabled: document.getElementById('autoUpdateEnabled'),
+  autoUpdateInterval: document.getElementById('autoUpdateInterval'),
+  autoUpdateSaveBtn: document.getElementById('autoUpdateSaveBtn'),
 };
 
 let currentState = { slides: [], settings: {} };
@@ -52,6 +60,7 @@ let appBuildId = null;
 const settingsTouchedAt = {};
 let settingsDebounceTimer = null;
 let settingsSaveInFlight = false;
+let maintStatusTimer = null;
 
 // ---------- helpers ----------
 function formatRangeValue(input) {
@@ -555,6 +564,58 @@ async function connectWifi() {
   }
 }
 
+function setMaintOutput(text) {
+  if (!elements.maintOutput) return;
+  elements.maintOutput.textContent = text || 'OK';
+}
+
+async function loadMaintenanceStatus() {
+  if (!elements.maintStatusLine) return;
+  try {
+    const payload = await requestJson('/api/device/maintenance/status');
+    elements.maintStatusLine.textContent = `Frameflow: ${payload.serviceState} · Kiosk: ${payload.kioskState} · Git: ${payload.gitHead}`;
+    if (elements.autoUpdateEnabled) elements.autoUpdateEnabled.checked = !!payload.autoUpdate?.autoUpdateEnabled;
+    if (elements.autoUpdateInterval) elements.autoUpdateInterval.value = payload.autoUpdate?.autoUpdateIntervalMin || 30;
+  } catch (e) {
+    elements.maintStatusLine.textContent = `Wartungsstatus fehlgeschlagen: ${e.message}`;
+  }
+}
+
+async function runMaintenanceAction(action) {
+  try {
+    setMaintOutput(`Starte: ${action} ...`);
+    const payload = await requestJson('/api/device/maintenance/action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+    setMaintOutput(payload.output || 'OK');
+    flashMessage(elements.maintMessage, `Aktion fertig: ${action}`);
+    await loadMaintenanceStatus();
+  } catch (e) {
+    setMaintOutput(e.message || 'Fehler');
+    flashMessage(elements.maintMessage, e.message, true);
+  }
+}
+
+async function saveAutoUpdateSettings() {
+  try {
+    const payload = {
+      autoUpdateEnabled: !!elements.autoUpdateEnabled?.checked,
+      autoUpdateIntervalMin: Number(elements.autoUpdateInterval?.value || 30),
+    };
+    await requestJson('/api/device/maintenance/auto-update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    flashMessage(elements.maintMessage, 'Auto-Update gespeichert.');
+    await loadMaintenanceStatus();
+  } catch (e) {
+    flashMessage(elements.maintMessage, e.message, true);
+  }
+}
+
 // ---------- events ----------
 socket.on('connect', () => setConnectionState(true));
 socket.on('disconnect', () => setConnectionState(false));
@@ -607,6 +668,11 @@ if (elements.wifiSavedList) {
     connectWifi();
   });
 }
+if (elements.maintRefreshBtn) elements.maintRefreshBtn.addEventListener('click', loadMaintenanceStatus);
+elements.maintActionButtons.forEach((button) => {
+  button.addEventListener('click', () => runMaintenanceAction(button.dataset.maintAction));
+});
+if (elements.autoUpdateSaveBtn) elements.autoUpdateSaveBtn.addEventListener('click', saveAutoUpdateSettings);
 
 // ---------- Live Frame UI-Scales ----------
 (function initFrameUiScales() {
@@ -708,3 +774,6 @@ loadWifiStatus();
 scanWifiNetworks();
 loadSavedWifi();
 autoConnectWifi(false);
+loadMaintenanceStatus();
+if (maintStatusTimer) clearInterval(maintStatusTimer);
+maintStatusTimer = setInterval(loadMaintenanceStatus, 15000);

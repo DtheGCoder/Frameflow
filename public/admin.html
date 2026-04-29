@@ -425,6 +425,40 @@
             </div>
             <p id="wifiMessage" class="admin-inline-message"></p>
           </div>
+
+          <div class="admin-ui-scales" style="margin-top:1rem;padding:1rem 1.1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;display:flex;flex-direction:column;gap:0.7rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.6rem;flex-wrap:wrap">
+              <strong style="font-size:0.95rem">Remote Wartung (Pi)</strong>
+              <button type="button" id="maintRefreshBtn" class="admin-ghost-btn" style="padding:0.35rem 0.65rem">Status neu laden</button>
+            </div>
+            <div id="maintStatusLine" style="font-size:0.82rem;opacity:0.9">Wartungsstatus wird geladen…</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:0.5rem">
+              <button type="button" class="admin-ghost-btn" data-maint-action="frameflowRestart">Frameflow neu starten</button>
+              <button type="button" class="admin-ghost-btn" data-maint-action="kioskRestart">Kiosk neu starten</button>
+              <button type="button" class="admin-ghost-btn" data-maint-action="kioskStop">Kiosk beenden</button>
+              <button type="button" class="admin-ghost-btn" data-maint-action="kioskStart">Kiosk starten</button>
+              <button type="button" class="admin-ghost-btn" data-maint-action="pullUpdate">Git Pull (Update)</button>
+              <button type="button" class="admin-ghost-btn" data-maint-action="fullUpdate">Pull + npm + Restart</button>
+              <button type="button" class="admin-ghost-btn" data-maint-action="setupKiosk">Kiosk Setup Script</button>
+              <button type="button" class="admin-ghost-btn" data-maint-action="rebootHost">Pi neu starten</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:0.5rem;align-items:end">
+              <label class="admin-field" style="margin:0">
+                <span>Auto-Update Intervall (Minuten)</span>
+                <input id="autoUpdateInterval" type="number" min="5" max="720" step="5" value="30" />
+              </label>
+              <label class="admin-toggle-row" style="margin:0;align-self:center">
+                <input id="autoUpdateEnabled" type="checkbox" />
+                <span class="admin-toggle-switch" aria-hidden="true"></span>
+                <span class="admin-toggle-copy"><strong>Auto-Update</strong><small>Pull + Restart automatisch</small></span>
+              </label>
+              <button type="button" id="autoUpdateSaveBtn" class="admin-primary-btn" style="height:2.5rem">
+                <svg><use href="#i-check"/></svg> Speichern
+              </button>
+            </div>
+            <pre id="maintOutput" style="margin:0;max-height:11rem;overflow:auto;padding:0.65rem 0.7rem;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.25);font-size:0.75rem;line-height:1.35;white-space:pre-wrap">Bereit.</pre>
+            <p id="maintMessage" class="admin-inline-message"></p>
+          </div>
         </div>
       </section>
     </div>

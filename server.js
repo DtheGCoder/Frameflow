@@ -22,6 +22,7 @@ const ROOT_DIR = __dirname;
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
 const STATE_FILE = path.join(DATA_DIR, 'state.json');
+const DEVICE_ADMIN_FILE = path.join(DATA_DIR, 'device-admin.json');
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 const MAX_UPLOAD_COUNT = 12;
 
@@ -462,6 +463,64 @@ function runNmcli(args) {
   });
 }
 
+function runShell(command, timeout = 30000) {
+  return new Promise((resolve, reject) => {
+    execFile('bash', ['-lc', command], { timeout, windowsHide: true }, (error, stdout, stderr) => {
+      if (error) {
+        const err = new Error((stderr || error.message || 'command failed').trim());
+        err.code = error.code;
+        reject(err);
+        return;
+      }
+      resolve({
+        stdout: String(stdout || '').trim(),
+        stderr: String(stderr || '').trim(),
+      });
+    });
+  });
+}
+
+function readDeviceAdminState() {
+  const fallback = { autoUpdateEnabled: false, autoUpdateIntervalMin: 30 };
+  if (!fs.existsSync(DEVICE_ADMIN_FILE)) return fallback;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(DEVICE_ADMIN_FILE, 'utf8'));
+    return {
+      autoUpdateEnabled: Boolean(parsed.autoUpdateEnabled),
+      autoUpdateIntervalMin: sanitizeNumber(parsed.autoUpdateIntervalMin, 30, 5, 720),
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function writeDeviceAdminState(next) {
+  fs.writeFileSync(DEVICE_ADMIN_FILE, JSON.stringify(next, null, 2));
+}
+
+let deviceAdminState = readDeviceAdminState();
+let autoUpdateTimer = null;
+
+async function runAutoUpdateCycle() {
+  try {
+    const { stdout } = await runShell('cd /opt/frameflow && sudo -n git pull --ff-only && sudo -n systemctl restart frameflow', 120000);
+    console.log('[auto-update]', stdout || 'ok');
+  } catch (error) {
+    console.warn('[auto-update] failed:', error.message || error);
+  }
+}
+
+function applyAutoUpdateTimer() {
+  if (autoUpdateTimer) {
+    clearInterval(autoUpdateTimer);
+    autoUpdateTimer = null;
+  }
+  if (!deviceAdminState.autoUpdateEnabled) return;
+  autoUpdateTimer = setInterval(runAutoUpdateCycle, deviceAdminState.autoUpdateIntervalMin * 60 * 1000);
+}
+
+applyAutoUpdateTimer();
+
 async function getWifiInterface() {
   const raw = await runNmcli(['-t', '-f', 'DEVICE,TYPE,STATE', 'device', 'status']);
   const lines = raw.split(/\r?\n/).filter(Boolean);
@@ -613,6 +672,93 @@ app.post('/api/device/wifi/connect', async (req, res) => {
 });
 
 // POST /api/sensors/ingest  — the Pi pushes here.
+
+app.get('/api/device/maintenance/status', async (_req, res) => {
+  try {
+    const [serviceRaw, kioskRaw, gitRaw] = await Promise.all([
+      runShell('systemctl is-active frameflow || true'),
+      runShell('systemctl --user is-active frameflow-kiosk.service || true'),
+      runShell('cd /opt/frameflow && git rev-parse --short HEAD || true'),
+    ]);
+    res.json({
+      serviceState: serviceRaw.stdout || 'unknown',
+      kioskState: kioskRaw.stdout || 'unknown',
+      gitHead: gitRaw.stdout || '-',
+      autoUpdate: deviceAdminState,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Status nicht verfügbar.' });
+  }
+});
+
+app.put('/api/device/maintenance/auto-update', (req, res) => {
+  deviceAdminState = {
+    autoUpdateEnabled: Boolean(req.body?.autoUpdateEnabled),
+    autoUpdateIntervalMin: sanitizeNumber(req.body?.autoUpdateIntervalMin, 30, 5, 720),
+  };
+  writeDeviceAdminState(deviceAdminState);
+  applyAutoUpdateTimer();
+  res.json({ ok: true, autoUpdate: deviceAdminState });
+});
+
+app.post('/api/device/maintenance/action', async (req, res) => {
+  const action = sanitizeShortText(req.body?.action || '', '');
+  const actions = {
+    frameflowRestart: {
+      command: 'sudo -n systemctl restart frameflow',
+      timeout: 30000,
+    },
+    frameflowStop: {
+      command: 'sudo -n systemctl stop frameflow',
+      timeout: 30000,
+    },
+    frameflowStart: {
+      command: 'sudo -n systemctl start frameflow',
+      timeout: 30000,
+    },
+    kioskStart: {
+      command: 'systemctl --user start frameflow-kiosk.service',
+      timeout: 30000,
+    },
+    kioskStop: {
+      command: 'systemctl --user stop frameflow-kiosk.service',
+      timeout: 30000,
+    },
+    kioskRestart: {
+      command: 'systemctl --user restart frameflow-kiosk.service',
+      timeout: 30000,
+    },
+    pullUpdate: {
+      command: 'cd /opt/frameflow && sudo -n git pull --ff-only',
+      timeout: 120000,
+    },
+    fullUpdate: {
+      command: 'cd /opt/frameflow && sudo -n git pull --ff-only && sudo -n npm install --omit=dev && sudo -n systemctl restart frameflow',
+      timeout: 180000,
+    },
+    setupKiosk: {
+      command: 'cd /opt/frameflow && bash scripts/setup-kiosk.sh',
+      timeout: 180000,
+    },
+    rebootHost: {
+      command: 'sudo -n reboot',
+      timeout: 10000,
+    },
+  };
+  const job = actions[action];
+  if (!job) {
+    return res.status(400).json({ error: 'Unbekannte Aktion.' });
+  }
+  try {
+    const result = await runShell(job.command, job.timeout);
+    res.json({ ok: true, action, output: [result.stdout, result.stderr].filter(Boolean).join('\n') || 'OK' });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message || 'Aktion fehlgeschlagen.',
+      hint: 'Falls sudo -n fehlschlägt: NOPASSWD sudoers für frameflow konfigurieren.',
+    });
+  }
+});
 // Body: { temperature, humidity, eco2, tvoc, aqi, updatedAt, error? }
 // Auth: header "X-Sensor-Token" must match FRAMEFLOW_SENSOR_TOKEN.
 app.post('/api/sensors/ingest', express.json({ limit: '8kb' }), (req, res) => {
